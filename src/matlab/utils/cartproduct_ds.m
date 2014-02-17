@@ -59,6 +59,7 @@ else
     tmp = fliplr(cellfun(@(c) 1:numel(c), factors, u{:}));
     [idx{1:n}] = ndgrid(tmp{:}); clear('tmp');
     idx = fliplr(idx);
-    content = arrayfun(@(i) factors{i}(idx{i}(:)), 1:n, u{:})
+    content = arrayfun(@(i) factors{i}(idx{i}(:)), 1:n, u{:});
 end
 P = dataset([{cat(1, content{:}).'}, factornames]);
+
