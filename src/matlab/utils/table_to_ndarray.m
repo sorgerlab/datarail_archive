@@ -2,21 +2,26 @@ function [ndarray, labels] = table_to_ndarray(tbl, varargin)
 
     narginchk(1, 3);
 
-    if nargout > 1
-        labels = [];
-    end
-
-    ft = table_to_factorial(tbl, varargin{:});
-
-    if nargin > 1
+    vns = tbl.Properties.VariableNames;
+    if numel(varargin) > 0
         keyvars = varargin{1};
         if ~iscell(keyvars)
             keyvars = {keyvars};
         end
+        unk = setdiff(keyvars, vns);
+        if numel(unk) > 0
+            error(['Unrecognized variables: ' strjoin(unk)]);
+        end
+        varargin = varargin(2:end);
     else
-        keyvars = tbl.Properties.VariableNames;
+        keyvars = vns(varfun(@iscategorical, tbl, ...
+                             'OutputFormat', 'uniform'));
+        if numel(keyvars) == numel(vns)
+            error('Unable to identify key variables');
+        end
     end
 
+    ft = table_to_factorial(tbl, keyvars, varargin{:});
     ft = sortrows_(ft, keyvars);
 
     nkv = numel(keyvars);
