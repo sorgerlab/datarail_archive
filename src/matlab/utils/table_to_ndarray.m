@@ -4,18 +4,10 @@ function [ndarray, labels] = table_to_ndarray(tbl, varargin)
 
     vns = tbl.Properties.VariableNames;
     if numel(varargin) > 0
-        keyvars = varargin{1};
-        if ~iscell(keyvars)
-            keyvars = {keyvars};
-        end
-        unk = setdiff(keyvars, vns);
-        if numel(unk) > 0
-            error(['Unrecognized variables: ' strjoin(unk)]);
-        end
+        [~, keyvars] = parse_keyvars_arg(tbl, varargin{1});
         varargin = varargin(2:end);
     else
-        keyvars = vns(varfun(@iscategorical, tbl, ...
-                             'OutputFormat', 'uniform'));
+        [~, keyvars] = guess_keyvars(tbl);
         if numel(keyvars) == numel(vns)
             error('Unable to identify key variables');
         end
@@ -39,7 +31,6 @@ function [ndarray, labels] = table_to_ndarray(tbl, varargin)
 end
 
 function [ndarray, labels] = t2nd_(tbl, keyvars)
-    uo = {'UniformOutput', false};
     nkv = numel(keyvars);
     if nkv == 2
         cv = keyvars{2};
@@ -48,7 +39,7 @@ function [ndarray, labels] = t2nd_(tbl, keyvars)
         [nda1, labels] = unstack_(tbl(:, [keyvars {v1}]), v1, cv);
         if length(vvs) > 1
             cb = @(vv) unstack_(tbl(:, [keyvars {vv}]), vv, cv);
-            ndas = [{nda1} cellfun(cb, vvs(2:end), uo{:})];
+            ndas = [{nda1} cellmap(cb, vvs(2:end))];
             ndarray = ndcat(ndas);
         else
             ndarray = nda1;
@@ -64,7 +55,7 @@ function [ndarray, labels] = t2nd_(tbl, keyvars)
         [nda1, labels] = t2nd_(st1, keyvars(2:end));
         if length(sts) > 1
             cb = @(st) t2nd_(st, keyvars(2:end));
-            ndas = [{nda1} cellfun(cb, sts(2:end), uo{:})];
+            ndas = [{nda1} cellmap(cb, sts(2:end))];
             ndarray = ndcat(ndas, true);
         else
             ndarray = nda1;
