@@ -14,14 +14,14 @@ function P = collapse(tbl, varargin)
     end
 
     inputvars = setdiff(tbl.Properties.VariableNames, groupingvars, 'stable');
-    inputvars = inputvars(:)';
-    groupingvars = groupingvars(:)';
+    inputvars = inputvars(:).';
+    groupingvars = groupingvars(:).';
 
     m = numel(inputvars);
     if nargin > 2
         aggns = varargin{2};
         if iscell(aggns)
-            aggns = aggns(:)';
+            aggns = aggns(:).';
             if (numel(aggns) ~= m)
                 % mismatch between number of aggregation functions specified
                 % and available input variables

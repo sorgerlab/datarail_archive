@@ -1,6 +1,4 @@
 function P = fill_missing_keys(tbl, varargin)
-    uo = {'UniformOutput', false};
-
     narginchk(1, 2);
 
     if nargin > 1
@@ -15,8 +13,7 @@ function P = fill_missing_keys(tbl, varargin)
 
     groupingvars = groupingvars(:);
 
-    levels = cellfun(@(n) unique(tbl.(n), 'stable'), ...
-                     groupingvars, uo{:});
+    levels = cellmap(@(n) unique(tbl.(n), 'stable'), groupingvars);
                  
     max_unique = prod(cellfun(@numel, levels));
     if height(unique(tbl(:, groupingvars))) == max_unique
@@ -42,9 +39,9 @@ function P = fill_missing_keys(tbl, varargin)
     imssng = itbl == 0;
     mssng = sum(imssng);
     if mssng > 0
-        itbl(imssng) = ((h - mssng + 1):h)';
+        itbl(imssng) = ((h - mssng + 1):h).';
     end
-    idx(itbl, 1) = (1:h)';
+    idx(itbl, 1) = (1:h).';
     P = P(idx, :);
 
 end

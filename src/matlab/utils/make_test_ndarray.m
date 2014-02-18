@@ -25,8 +25,7 @@ function out = mtnda_( sz, n )
     
     assert(n > 0);
     nd0 = mtnda_(sz(1:end-1), n - 1) * 10;
-    out = ndcat(arrayfun(@(i) nd0 + i, 1:sz(end), ...
-                         'UniformOutput', false));
+    out = ndcat(arraymap(@(i) nd0 + i, 1:sz(end)));
 end
 
 function out = expanded_( sz, n )
@@ -44,8 +43,7 @@ function out = expanded_( sz, n )
 
     slab = ones([rest 1]);
     m = max(ndims(nd0), 2);
-    out = ndcat(arrayfun(@(i) cat(m, i * slab, nd0), 1:this, ...
-                         'UniformOutput', false), true);
+    out = ndcat(arraymap(@(i) cat(m, i * slab, nd0), 1:this), true);
 
     % the following block has no effect on the output; it should 
     % be deleted once the code is fully tested

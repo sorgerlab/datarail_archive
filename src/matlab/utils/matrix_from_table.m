@@ -33,7 +33,7 @@ function [matrix, labels] = matrix_from_table(tbl, rowvar, colvar, valvar, varar
     rowlabels = t(:, rowvar);
     t.(rowvar) = [];
     if nargout > 1
-      collabels = cell2table(t.Properties.VariableNames', ...
+      collabels = cell2table(t.Properties.VariableNames.', ...
                             'VariableNames', {colvar});
       labels = {rowlabels collabels};
     end

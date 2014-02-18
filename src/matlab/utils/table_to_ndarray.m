@@ -92,11 +92,6 @@ function [matrix, labels] = unstack_(tbl, valvar, colvar)
     matrix = cell2mat(table2cell(t));
 end
 
-function ndarray = arrstack_(subarrs)
-    tmp = cellfun(@(c) c(:)', subarrs, 'un', 0);
-    ndarray = reshape(cat(1, tmp{:}), [length(subarrs) size(subarrs{1})]);
-end
-
 function out = tolabels_(lbls, varargin)
     narginchk(1, 2);
     if nargin > 1
@@ -109,8 +104,7 @@ function out = tolabels_(lbls, varargin)
 end
 
 function out = sortrows_(tbl, keyvars)
-    svs = cellfun(@(v) sortvar_(tbl, v), keyvars, ...
-                  'UniformOutput', false);
+    svs = cellmap(@(v) sortvar_(tbl, v), keyvars);
     [~, i] = sortrows(cell2mat(svs));
     out = tbl(i, :);
 end
@@ -119,39 +113,3 @@ function out = sortvar_(tbl, varname)
     col = tbl.(varname);
     [~, out] = ismember(col, unique(col, 'stable'));
 end
-
-% function ndarray = t2nd_(tbl, keyvars)
-%     uo = {'UniformOutput', false};
-%     nkv = numel(keyvars);
-%     if nkv == 2
-%         vvs = setdiff(tbl.Properties.VariableNames, keyvars, 'stable');
-%         cv = keyvars{2};
-%         cb = @(vv) unstack_(tbl(:, [keyvars {vv}]), vv, cv);
-% 
-%         %%% NOTE: THE STACKING BELOW IS WRONG
-%         %%% ndarray = arrstack_(cellfun(cb, vvs, uo{:}));
-% 
-%         ndarray = ndcat(cellfun(cb, vvs, uo{:}), true);
-%         %length(subtbls)
-%         %size(subtbls{1})
-%         %tmp = cellfun(@(c) c(:)', subtbls, 'un', 0);
-%         %ndarray = reshape(cat(1, tmp{:}), [numel(y) size(subtbls{1})]);
-%     else
-%         assert(nkv > 2);
-%         % kv0 = keyvars{1};
-%         % l0 = unique(ft.(kv0), 'stable');
-%         % rest = setdiff(ft.Properties.VariableNames, keyvars(1), 'stable');
-%     
-%         %cb = @(v) table_to_ndarray(ft(strcmp(ft.(kv0), v), rest), kvs1, varargin{2:end});
-%         %foo = cellfun(cb, l0, uo{:});
-%         %[length(l0) length(foo)];
-%         %ndarray = arrstack_(foo);
-%         %tmp = cellfun(@(c) c(:)', foo, 'un', 0);
-%         %ndarray = reshape(cat(1, tmp{:}), [numel(l0) size(foo{1, 1})]);
-%         
-%         sts = tslice(tbl, keyvars{1});
-%         cb = @(st) t2nd_(st, keyvars(2:end));
-%         % ndarray = arrstack_(cellfun(cb, sts, uo{:}));
-%         ndarray = ndcat(cellfun(cb, sts, uo{:}));
-%     end
-% end

@@ -29,7 +29,7 @@ function out = nth(ndarray, n, dims)
 nd = ndims(ndarray);
 
 if iscell(dims)
-    dims = unique(cell2mat(dims(:))', 'stable');
+    dims = unique(cell2mat(dims(:)).', 'stable');
     if max(dims) > nd || min(dims) < 1
         error('dim specs are out-of-range');
     end

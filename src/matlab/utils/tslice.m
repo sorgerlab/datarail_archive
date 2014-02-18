@@ -1,6 +1,6 @@
 function [slices, labels] = tslice(tbl, var)
     col = unique(tbl.(var), 'stable');
-    col = col(:)';
+    col = col(:).';
     rest = setdiff(tbl.Properties.VariableNames, {var}, 'stable');
     
     labels = col;
@@ -14,5 +14,5 @@ function [slices, labels] = tslice(tbl, var)
             col = num2cell(col);
         end
     end
-    slices = cellfun(cb, col, 'un', false);
+    slices = cellmap(cb, col);
 end

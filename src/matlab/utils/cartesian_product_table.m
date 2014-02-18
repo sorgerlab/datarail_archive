@@ -16,16 +16,15 @@ function P = cartesian_product_table(factors, factornames)
     if n == 0
         P = table({}, {});
     else
-        u = {'UniformOutput', false};
-        factors = cellfun(@(c) reshape(c, [numel(c) 1]), ...
-                          reshape(factors, [1 n]), u{:});
+        factors = cellmap(@(c) reshape(c, [numel(c) 1]), ...
+                          reshape(factors, [1 n]));
         if n == 1
             content = factors;
         else
-            tmp = fliplr(cellfun(@(c) 1:numel(c), factors, u{:}));
+            tmp = fliplr(cellmap(@(c) 1:numel(c), factors));
             [idx{1:n}] = ndgrid(tmp{:}); clear('tmp');
             idx = fliplr(idx);
-            content = arrayfun(@(i) factors{i}(idx{i}(:)), 1:n, u{:});
+            content = arraymap(@(i) factors{i}(idx{i}(:)), 1:n);
         end
         P = table(content{:, :}, 'VariableNames', factornames);
     end

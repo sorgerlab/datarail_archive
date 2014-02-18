@@ -2,9 +2,8 @@ function tbl = ndarray_to_table(ndarray, labels)
 
     narginchk(2, 2);
 
-    uo = {'UniformOutput' false};
     ndsz = size(ndarray);
-    % lbsz = cell2mat(cellfun(@numel_, labels, uo{:}));
+    % lbsz = cell2mat(cellmap(@numel_, labels));
     % lbsz = lbsz(1:find(x~=1, 1, 'last'));
 
     % assert(isequal(ndsz, lbsz));
@@ -18,11 +17,11 @@ function tbl = ndarray_to_table(ndarray, labels)
     end
     labels = labels(1:end-1);
 
-    % tbl = cartesian_product_table(cellfun(@levels_, labels, uo{:}), ...
-    %                               cellfun(@(t) t.Properties.VariableNames{1}, labels, uo{:}));
+    % tbl = cartesian_product_table(cellmap(@levels_, labels), ...
+    %                               cellmap(@(t) t.Properties.VariableNames{1}, labels));
 
-    tbl = cartesian_product_table(cellfun(@(t) t{:, 1}, labels, uo{:}), ...
-                                  cellfun(@(t) t.Properties.VariableNames{1}, labels, uo{:}));
+    tbl = cartesian_product_table(cellmap(@(t) t{:, 1}, labels), ...
+                                  cellmap(@(t) t.Properties.VariableNames{1}, labels));
 
     m = numel(ndarray);
     p = ndims(ndarray):-1:1;

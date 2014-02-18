@@ -10,7 +10,7 @@ function out = ndarraymap(fn, ndarray, iterateover)
     n = ndims(ndarray);
 
     if iscell(iterateover)
-        iterateover = unique(cell2mat(iterateover(:))');
+        iterateover = unique(cell2mat(iterateover(:)).');
         j = numel(iterateover);
     else
         j = iterateover;
@@ -41,7 +41,7 @@ end
 function out = ndarraymap_(f, ndarray, j)
 
     dims = size(ndarray);
-    %%% m = reshape(ndarray, prod(dims(1:j)), [])';
+    %%% m = reshape(ndarray, prod(dims(1:j)), []).';
     nr = prod(dims(1:j));
     nc = prod(dims(j+1:end));
 
@@ -58,7 +58,7 @@ function out = ndarraymap_(f, ndarray, j)
         s2 = dims(1:j);
     end
 
-    tmp = cellfun(wrap_(f, s0, s1), c, 'un', false);
+    tmp = cellmap(wrap_(f, s0, s1), c);
     out = reshape(cat(1, tmp{:}), s2);
 
 end
