@@ -1,6 +1,6 @@
-function [vi, vn] = guess_keyvars( tbl )
-    i = varfun(@iscategorical, tbl, 'OutputFormat', 'uniform');
-    vi = find(i);
+function [vi, vn] = guess_valvars( tbl )
+    i = guess_keyvars(tbl);
+    vi = setdiff(1:size(tbl, 2), i, 'stable');
     assert(isrow(vi));
     if nargout > 1
         vns = tbl.Properties.VariableNames;

@@ -14,7 +14,8 @@ function P = cartesian_product_table(factors, factornames)
     end
 
     if nd == 0
-        P = table({}, {});
+        P = table(0);
+        P(:, 1) = []; % "empty 1-by-0 table"
     else
         factors = cellmap(@(c) reshape(c, [numel(c) 1]), ...
                           reshape(factors, [1 nd]));

@@ -3,21 +3,20 @@ function P = collapse(tbl, varargin)
     narginchk(1, 3);
 
     if nargin > 1
-        groupingvars = varargin{1};
-        if ~iscell(groupingvars)
-            groupingvars = {groupingvars};
-        % else
-            % assert(numel(groupingvars) > 0);
+        keyvars = varargin{1};
+        if ~iscell(keyvars)
+            keyvars = {keyvars};
         end
+        keyvars = keyvars(:).';
     else
-        groupingvars = tbl.Properties.VariableNames;
+        [~, keyvars] = guess_keyvars(tbl);
+        assert(isrow(keyvars));
     end
 
-    inputvars = setdiff(tbl.Properties.VariableNames, groupingvars, 'stable');
-    inputvars = inputvars(:).';
-    groupingvars = groupingvars(:).';
+    valvars = setdiff(tbl.Properties.VariableNames, keyvars, 'stable');
+    assert(isrow(valvars));
 
-    m = numel(inputvars);
+    m = numel(valvars);
     if nargin > 2
         aggns = varargin{2};
         if iscell(aggns)
@@ -34,33 +33,35 @@ function P = collapse(tbl, varargin)
 
     % --------------------------------------------------------------------------
 
-    if m == 0
-        P = unique(tbl);
-    else
-        if iscell(aggns)
-            P = collapse_(tbl, groupingvars, inputvars, aggns);
-        else
-            P = varfun_(aggns, tbl, groupingvars, inputvars);
-        end
-    end
-
-    P.Properties.RowNames = {};
+    P = collapse_(tbl, keyvars, valvars, aggns, m);
+    return;
+%     if m == 0
+%         P = unique(tbl);
+%     else
+%         if iscell(aggns)
+%             P = collapse_(tbl, keyvars, valvars, aggns);
+%         else
+%             P = varfun_(aggns, tbl, keyvars, valvars);
+%         end
+%     end
+% 
+%     P.Properties.RowNames = {};
 end
 
 
-function out = varfun_(fn, tbl, gv, iv)
-    out = varfun(fn, tbl, 'GroupingVariables', gv, 'InputVariables', iv);
-    out.GroupCount = [];
-    out.Properties.VariableNames = [gv iv];
-end
-
-  
-function out = collapse_(tbl, gv, iv, aggns)
-    t0 = varfun_(aggns{1}, tbl, gv, iv(1, 1));
-    if numel(iv) > 1
-        t1 = collapse_(tbl, gv, iv(1, 2:end), aggns(1, 2:end));
-        out = join(t0, t1, 'Keys', gv);
-    else
-        out = t0;
-    end
-end
+% function out = varfun_(fn, tbl, gv, iv)
+%     out = varfun(fn, tbl, 'GroupingVariables', gv, 'InputVariables', iv);
+%     out.GroupCount = [];
+%     out.Properties.VariableNames = [gv iv];
+% end
+% 
+%   
+% function out = collapse_(tbl, gv, iv, aggns)
+%     t0 = varfun_(aggns{1}, tbl, gv, iv(1, 1));
+%     if numel(iv) > 1
+%         t1 = collapse_(tbl, gv, iv(1, 2:end), aggns(1, 2:end));
+%         out = join(t0, t1, 'Keys', gv);
+%     else
+%         out = t0;
+%     end
+% end
