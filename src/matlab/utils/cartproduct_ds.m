@@ -58,8 +58,8 @@ end
 
 nd = numel(factors);
 
-if nd ~= numel(factornames)
-    error('number of factors and number of factornames do not match');
+if numel(factornames) ~= nd
+    error('numbers of factors and of factornames do not match');
 end
 
 if nd == 1

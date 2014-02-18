@@ -4,27 +4,27 @@ function P = cartesian_product_table(factors, factornames)
 
     narginchk(2, 2);
 
-    if ~iscell(factornames)
-        factornames = {factornames};
+    if ~(iscell(factors) && iscell(factornames))
+        error('first and/or second argument is not a cell array');
     end
 
-    n = numel(factors);
-    if numel(factornames) ~= n
-        error('number of factors and number of factornames do not match');
+    nd = numel(factors);
+    if numel(factornames) ~= nd
+        error('numbers of factors and of factornames do not match');
     end
 
-    if n == 0
+    if nd == 0
         P = table({}, {});
     else
         factors = cellmap(@(c) reshape(c, [numel(c) 1]), ...
-                          reshape(factors, [1 n]));
-        if n == 1
+                          reshape(factors, [1 nd]));
+        if nd == 1
             content = factors;
         else
             tmp = fliplr(cellmap(@(c) 1:numel(c), factors));
-            [idx{1:n}] = ndgrid(tmp{:}); clear('tmp');
+            [idx{1:nd}] = ndgrid(tmp{:}); clear('tmp');
             idx = fliplr(idx);
-            content = arraymap(@(i) factors{i}(idx{i}(:)), 1:n);
+            content = arraymap(@(i) factors{i}(idx{i}(:)), 1:nd);
         end
         P = table(content{:, :}, 'VariableNames', factornames);
     end
