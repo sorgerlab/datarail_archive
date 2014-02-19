@@ -11,12 +11,16 @@ end
 % end
 
 function test_happypath(testCase)
-%     sz = testCase.TestData.HappyPath;
     sz = [2 3 4];
     i2s = make_ind2sub(sz);
     n = prod(sz);
     vs = reshape(arrayfun(@(i) collapse(i2s(i)), 1:n), [], 1);
-    lnames = @(ll) cellmap(@(t) t.Properties.VariableNames{1}, ll);
+    function vns = lnames(lbls)
+        kvns = cellmap(@(t) t.Properties.VariableNames{1}, ...
+                       lbls(1:end-1));
+        vvns = lbls{end}{:, 1}.';
+        vns = [kvns vvns];
+    end
 
     % collapsed test table
     function do_collapsed_()
@@ -44,7 +48,8 @@ function test_happypath(testCase)
         c = num2cell(reshape(ta, [], size(ta, ndims(ta))), 2);
         verifyEqual(testCase, cellfun(@(a) collapse(a), c), vs);
 
-        varnames = [keyvars 'Value'];
+        valvars = tt.Properties.UserData('valvars');
+        varnames = [keyvars valvars];
         verifyEqual(testCase, lnames(tl), varnames);
     end
 
