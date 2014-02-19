@@ -2,8 +2,6 @@ function P = cartesian_product_table(factors, factornames)
 %CARTESIAN_PRODUCT_TABLE Computes the Cartesian products between cell arrays and
 %makes a table to express the results
 
-    narginchk(2, 2);
-
     if ~(iscell(factors) && iscell(factornames))
         error('first and/or second argument is not a cell array');
     end
