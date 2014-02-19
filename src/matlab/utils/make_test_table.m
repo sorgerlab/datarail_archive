@@ -39,7 +39,7 @@ function tbl = mktbl_(expanded, vns, varargin)
     if expanded
         vvs = vns{2};
     else
-        vvs = {'Value'};
+        vvs = {'value'};
     end
     varnames = [kvs vvs];
     userdata = make_hash({{'keyvars', kvs}, ...

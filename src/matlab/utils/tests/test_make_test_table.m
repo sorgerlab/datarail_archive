@@ -165,7 +165,7 @@ function vvs = getvalvars_(tbl, expanded)
         vn = tbl.Properties.VariableNames;
         vvs = vn(:, cellfun(@(s) strncmp(s, 'value_', 6), vn));
     else
-        vvs = {'Value'};
+        vvs = {'value'};
     end
 end
 
