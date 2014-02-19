@@ -41,11 +41,7 @@ function tbl = mktbl_(expanded, vns, varargin)
     else
         vvs = {'value'};
     end
-    varnames = [kvs vvs];
-    userdata = make_hash({{'keyvars', kvs}, ...
-                          {'valvars', vvs}});
-    tbl = table(data{:}, 'VariableNames', varnames);
-    tbl.Properties.UserData = userdata;
+    tbl = make_table(data, kvs, vvs);
 end
 
 function [sz, expanded, nd] = argchk_(sz, varargin)

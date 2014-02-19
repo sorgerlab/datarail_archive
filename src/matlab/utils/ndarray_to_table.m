@@ -1,39 +1,37 @@
 function tbl = ndarray_to_table(ndarray, labels)
 
-    narginchk(2, 2);
-
     ndsz = size(ndarray);
     % lbsz = cell2mat(cellmap(@numel_, labels));
     % lbsz = lbsz(1:find(x~=1, 1, 'last'));
 
     % assert(isequal(ndsz, lbsz));
-
     vvs = labels{end};
-    if ischar(vvs)
-        vvs = {vvs};
-    end
-    if iscell(vvs)
-        vvs = make_label('Value', vvs);
-    end
     labels = labels(1:end-1);
 
-    % tbl = cartesian_product_table(cellmap(@levels_, labels), ...
-    %                               cellmap(@(t) t.Properties.VariableNames{1}, labels));
+    if ischar(vvs)
+        vvs = {vvs};
+    elseif istable(vvs)
+        vvs = vvs{:, :}.';
+    else
+        vvs = reshape(vvs, 1, []);
+    end
 
-    tbl = cartesian_product_table(cellmap(@(t) t{:, 1}, labels), ...
-                                  cellmap(@(t) t.Properties.VariableNames{1}, labels));
+    kvs = cellmap(@(t) t.Properties.VariableNames{1}, labels);
+    levels = cellmap(@(t) t{:, 1}, labels);
+    keys = cartesian_product(levels);
 
     m = numel(ndarray);
-    p = ndims(ndarray):-1:1;
+    nd = ndims(ndarray);
+    p = nd:-1:1;
     if numel(vvs) > 1
         m = m/ndsz(end);
         p = circshift(p, [0 -1]);
+        nd = nd - 1;
     end
-    data = reshape(permute(ndarray, p), m, []);
-    for i = 1:numel(vvs)
-        tbl.(vvs{i, 1}{:}) = data(:, i);
-    end
-
+    assert(nd == numel(keys));
+    values = num2cell(reshape(permute(ndarray, p), m, []), 1);
+    data = [keys values];
+    tbl = make_table(data, kvs, vvs);
 end
 
 % function out = levels_(lbl)
