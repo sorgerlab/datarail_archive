@@ -4,7 +4,8 @@ function P = fill_missing_keys(tbl, varargin)
     if nargin > 1
         groupingvars = varargin{1};
     else
-        groupingvars = tbl.Properties.VariableNames;
+        [~, groupingvars] = guess_keyvars(tbl);
+        assert(isrow(groupingvars));
     end
 
     if ~iscell(groupingvars)
