@@ -1,6 +1,7 @@
 function P = cartesian_product_table(factors, factornames)
-%CARTESIAN_PRODUCT_TABLE Computes the Cartesian products between cell arrays and
-%makes a table to express the results
+%CARTESIAN_PRODUCT_TABLE(FACTORS, FACTORNAMES) computes the cartesian
+%product of the elements in the cell array FACTORS and expresses the result
+%as a table with variable names as specified by FACTORNAMES.
 
     if ~(iscell(factors) && iscell(factornames))
         error('first and/or second argument is not a cell array');

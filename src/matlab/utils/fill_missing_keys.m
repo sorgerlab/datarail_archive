@@ -1,70 +1,15 @@
-function P = fill_missing_keys(tbl, varargin)
-    narginchk(1, 2);
+function P = fill_missing_keys(varargin)
+%FILL_MISSING_KEYS(TBL, KEYVARS) produces a new table from the table TBL by
+%    inserting new rows for all the combinations of possible values of
+%    the KEYVARS variables that are not present in TBL.  The values
+%    for the remaining variables of TBL are those produced by OUTERJOIN.
+%
+%FILL_MISSING_KEYS(TBL) is equivalent to a call to
+%    FILL_MISSING_KEYS(TBL, KEYVARS) with KEYVARS set to hold the
+%    variables K of TBL for which ISCATEGORICAL(TBL.K) is true.
 
-    if nargin > 1
-        groupingvars = varargin{1};
-    else
-        [~, groupingvars] = guess_keyvars(tbl);
-        assert(isrow(groupingvars));
-    end
-
-    if ~iscell(groupingvars)
-        groupingvars = {groupingvars};
-    end
-
-    groupingvars = groupingvars(:);
-
-    levels = cellmap(@(n) unique(tbl.(n), 'stable'), groupingvars);
-                 
-    max_unique = prod(cellfun(@numel, levels));
-    if height(unique(tbl(:, groupingvars))) == max_unique
-        P = tbl;
-        return;
-    end
-    
-    for c = setdiff(tbl.Properties.VariableNames, groupingvars)
-        v = c{:};
-        if islogical(tbl.(v))
-            tbl.(v) = tbl.(v) + 0;
-        end
-    end
-    %%% unstable ordering
-    % s = cartesian_product_table(levels, groupingvars);
-    % P = outerjoin(s, tbl, 'MergeKeys', true);
-
-    % stable ordering
-    s = cartesian_product_table(levels, groupingvars);
-
-    [P, itbl, ~] = outerjoin(tbl, s, 'MergeKeys', true);
-    h = height(P);
-    imssng = itbl == 0;
-    mssng = sum(imssng);
-    if mssng > 0
-        itbl(imssng) = ((h - mssng + 1):h).';
-    end
-    idx(itbl, 1) = (1:h).';
-    P = P(idx, :);
-
+    % [tbl, kis, ~, ~, ~] = process_args__({'KeyVars'}, varargin);
+    % kns = dr.vns(tbl, kis);
+    [tbl, kns, ~, ~, ~] = process_args__({'KeyVars'}, varargin);
+    P = fill_missing_keys_(tbl, kns);
 end
-  
-% function P = fill_missing_keys(tbl, varargin)
-%
-% narginchk(1, 3);
-%
-% if length(varargin) == 1
-% %{
-% it would be nice to support the option of passing supplemental ...
-%     elements, so that the level sets did not have to be limited to ...
-%     those represented in TBL, but this introduces argument ...
-%     consistency issues that are particularly thorny to deal when ...
-%     there's the possibility of categorical (rather than string) ...
-%     factors, so I'm punting on this feature for now.
-% %}
-%     extra = varargin{1};
-%     if numel(extra) ~= m
-%         error('inconsistent arguments');
-%     end
-%     extra = reshape(extra, [m 1]);
-% else
-%     extra = repmat({{}}, [m 1]);
-% end

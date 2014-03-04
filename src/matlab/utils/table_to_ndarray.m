@@ -1,115 +1,127 @@
-function [ndarray, labels] = table_to_ndarray(tbl, varargin)
+function [ndarray, labels] = table_to_ndarray(varargin)
+%TABLE_TO_NDARRAY convert table to nd-array.
+%     A = TABLE_TO_NDARRAY(TBL) converts table TBL to nd-array A.
+%
+%     [A, L] = TABLE_TO_NDARRAY(TBL) also puts the labels for A into
+%     the cell array L.
+%
+%     A = TABLE_TO_NDARRAY(TBL, 'PARAM1',val1, 'PARAM2',val2, ...) allows
+%     you to specify optional parameter name/value pairs to control
+%     TABLE_TO_NDARRAY's behavior.  Parameters are:
+% 
+%         'KeyVars' - Variables of TBL to use as key variables.  The
+%                     ordering of the variables in this parameter affects
+%                     the ordering of the dimensions of the resulting
+%                     NDARRAY.  Key variables may be specified as a
+%                     one-dimensional cell array containing variable names,
+%                     variable numbers, or combination thereof, or some
+%                     one-dimensional value (e.g. a numeric vector)
+%                     resolvable to such.  If, after resolving all the
+%                     specified variables, duplicates are detected, an
+%                     exception is raised.  If the KEYVARS parameter is not
+%                     specified, the function uses the heuristic of taking
+%                     as key variables those for which the ISCATEGORICAL
+%                     predicate returns TRUE (ordered according to their
+%                     original ordering among TBL's variables).  (NOTE:
+%                     This selection heuristic should not be construed as a
+%                     requirement that key variables be categorical,
+%                     although this is often a good idea.)  If an empty
+%                     list of key variables is specified, the resulting
+%                     NDARRAY is the vector obtained by applying the
+%                     aggregator function(s) (see AGGRS below) to the value
+%                     variables.
+% 
+%         'ValVars' - Variables of TBL to use as value variables.  The
+%                     ordering of the variables in this parameter
+%                     determines the ordering of the corresponding slices
+%                     in the resulting NDARRAY.  Value variables may be
+%                     specified as a one-dimensional cell array containing
+%                     variable names, variable numbers, or combination
+%                     thereof, or some one-dimensional value (e.g. a
+%                     numeric vector) resolvable to such.  Repeated value
+%                     variables are preserved (and will result in repeated
+%                     slices in the resulting NDARRAY).  If the VALVARS
+%                     parameter is not specified, the function uses the
+%                     subset of TBL's non-keyvar variables for which the
+%                     ISCATEGORICAL predicate returns FALSE, in their
+%                     original order of appearance.
+% 
+%           'Aggrs' - Either a function handle or a cell array of function
+%                     handles, specifying the functions for consolidating
+%                     the value variable entries of groups of rows that
+%                     have the same combination of keyvar entries.  If a
+%                     function handle is specified, it is used for all the
+%                     value variables.  If a cell array of function handles
+%                     is specified, it must contain one function handle for
+%                     each value variable, in the same order as that of the
+%                     value variables.  If omitted, the default for this
+%                     parameter is a type-preserving analogue of @SUM.
+% 
+%           'Outer' - A logical value: if TRUE (FALSE), the slices in the
+%                     resulting NDARRAY will corresponding to indices of
+%                     NDARRAY's last (first) dimension.  Note that if the
+%                     number of value variables is 1 and the value of this
+%                     parameter is TRUE, the resulting NDARRAY will have K
+%                     dimensions (where K is the number of key variables);
+%                     otherwise it will have K + 1 dimensions.  The reason
+%                     for this is that MATLAB automatically neglects
+%                     trailing dimensions of size 1.  Default: FALSE.
 
-    narginchk(1, 3);
+    [tbl, kns, vns, aggrs, outer] = ...
+        process_args__({'KeyVars' 'ValVars' 'Aggrs' 'Outer'}, varargin);
 
-    vns = tbl.Properties.VariableNames;
-    if numel(varargin) > 0
-        [~, keyvars] = parse_keyvars_arg(tbl, varargin{1});
-        varargin = varargin(2:end);
+    ftbl = table_to_factorial_(tbl, kns, vns, aggrs);
+
+    [ii, levels] = tbl_ndarray_ordering_(ftbl, dr.vidxs(tbl, kns));
+
+    sh = cellfun(@numel, levels);
+    assert(prod(sh) == height(ftbl), 'first argument is not factorial');
+
+    nvs = numel(vns);
+
+    vlvls = categorical(vns);
+    if outer
+        sh = [sh nvs];
+        ndarray = reshape(ftbl{ii, vns}, sh);
+        levels = [levels {vlvls}];
     else
-        [~, keyvars] = guess_keyvars(tbl);
-        if numel(keyvars) == numel(vns)
-            error('Unable to identify key variables');
-        end
+        sh = [nvs sh];
+        ndarray = reshape(ftbl{ii, vns}.', sh);
+        levels = [{vlvls} levels];
     end
 
-    ft = table_to_factorial(tbl, keyvars, varargin{:});
-    ft = sortrows_(ft, keyvars);
-
-    nkv = numel(keyvars);
-    vvs = setdiff(ft.Properties.VariableNames, keyvars, 'stable');
-    if nkv < 2
-        labels = {tolabels_(vvs)};
-        if nkv == 1
-            labels = [{ft.(keyvars{1})} labels];
-            ft.(keyvars{1}) = [];
-        end
-        ndarray = cell2mat(table2cell(ft));
-        return;
-    end    
-    [ndarray, labels] = t2nd_(ft, keyvars);
-end
-
-function [ndarray, labels] = t2nd_(tbl, keyvars)
-    nkv = numel(keyvars);
-    if nkv == 2
-        cv = keyvars{2};
-        vvs = setdiff(tbl.Properties.VariableNames, keyvars, 'stable');
-        v1 = vvs{1};
-        [nda1, labels] = unstack_(tbl(:, [keyvars {v1}]), v1, cv);
-        if length(vvs) > 1
-            cb = @(vv) unstack_(tbl(:, [keyvars {vv}]), vv, cv);
-            ndas = [{nda1} cellmap(cb, vvs(2:end))];
-            ndarray = ndcat(ndas);
-        else
-            ndarray = nda1;
-        end
-        if nargout > 1
-            labels = [labels {tolabels_(vvs)}];
-        end
-    else
-        assert(nkv > 2);
-        kv1 = keyvars{1};
-        [sts, label1] = tslice(tbl, kv1);
-        st1 = sts{1};
-        [nda1, labels] = t2nd_(st1, keyvars(2:end));
-        if length(sts) > 1
-            cb = @(st) t2nd_(st, keyvars(2:end));
-            ndas = [{nda1} cellmap(cb, sts(2:end))];
-            ndarray = ndcat(ndas, true);
-        else
-            ndarray = nda1;
-        end
-        if nargout > 1
-            label1 = tolabels_(label1, kv1);
-            labels = [{label1} labels];
-        end
-    end
-end
-
-function [matrix, labels] = unstack_(tbl, valvar, colvar)
-    collabels = unique(tbl(:, colvar), 'stable');
-    
-    warning('off','stats:dataset:genvalidnames:ModifiedVarnames')
-    warning('off', 'MATLAB:codetools:ModifiedVarnames');
-    t = unstack(tbl, valvar, colvar);
-    warning('on', 'MATLAB:codetools:ModifiedVarnames');
-    warning('on','stats:dataset:genvalidnames:ModifiedVarnames')
-
-    rowvars = setdiff(tbl.Properties.VariableNames, ...
-                      {valvar, colvar});
-    assert(numel(rowvars) == 1);
-    rowvar = rowvars{1};
-    rowlabels = t(:, rowvar);
-    t.(rowvar) = [];
     if nargout > 1
-        labels = {rowlabels collabels};
+        if outer
+            lns = [kns {'Value'}];
+        else
+            lns = [{'Value'} kns];
+        end
+        nls = numel(levels);
+        assert(numel(lns) == nls);
+        labels = arraymap(@(i) tolabels_(levels{i}, lns{i}), 1:nls);
     end
 
-    % t.Properties.RowNames = rowlabels;
-    % t.Properties.DimensionNames = {rowvar colvar};
-
-    matrix = cell2mat(table2cell(t));
 end
 
-function out = tolabels_(lbls, varargin)
-    narginchk(1, 2);
-    if nargin > 1
-        name = varargin{1};
-    else
-        name = 'Value';
+
+function [ii, levels] = tbl_ndarray_ordering_(tbl, kis)
+    m = max(kis);
+    assert(0 < min(kis) && m <= width(tbl), ...
+        'second argument contains invalid key indices');
+    ki2levels = cell(m);
+    for ki = kis
+        ki2levels{ki} = unique(tbl{:, ki}, 'stable');
     end
 
+    levels = ki2levels(kis);
+    % the fliplr below yields a colexicographic ordering wrt
+    % the kis;
+    svs = arraymap(@(ki) dr.indexof(tbl{:, ki}, ki2levels{ki}), ...
+        fliplr(kis));
+    [~, ii] = sortrows(cell2mat(svs));
+end
+
+function out = tolabels_(lbls, name)
     out = table(lbls(:), 'VariableNames', {name});
 end
 
-function out = sortrows_(tbl, keyvars)
-    svs = cellmap(@(v) sortvar_(tbl, v), keyvars);
-    [~, i] = sortrows(cell2mat(svs));
-    out = tbl(i, :);
-end
-
-function out = sortvar_(tbl, varname)
-    col = tbl.(varname);
-    [~, out] = ismember(col, unique(col, 'stable'));
-end

@@ -11,20 +11,20 @@ function tbl = make_test_table( sz, varargin )
     end
 
     n = prod(sz);
-    function lvls = levels(expanded, perm)
+    function lvls = levels(expanded)
         lvls = make_test_ndarray(sz, expanded);
-        lvls = reshape(permute(lvls, perm), n, []);
+        lvls = dr.unroll(lvls, false);
         lvls = cellmap(@(i) lvls(:, i), num2cell(1:size(lvls, 2)));
     end
 
-    keyvars = varnames_(nd, 'Key_');
-    keylevels = levels(true, circshift(nd+1:-1:1, [0 -1]));
+    keyvars = varnames_(nd, 'A');
+    keylevels = levels(true);
 
     if expanded
         vals = keylevels;
-        vns = {keyvars, varnames_(nd, 'value_')};
+        vns = {keyvars, varnames_(nd, 'a')};
     else
-        vals = levels(false, nd:-1:1);
+        vals = levels(false);
         vns = {keyvars};
     end
 
@@ -59,6 +59,6 @@ function [sz, expanded, nd] = argchk_(sz, varargin)
     expanded = nargin == 2 && varargin{1};
 end
 
-function vnames = varnames_(n, prefix)
-   vnames = cellmap(@(i) [prefix char(i+64)], num2cell(1:n));
+function vnames = varnames_(n, start)
+   vnames = num2cell(char(start):char(start+n-1));
 end

@@ -1,5 +1,6 @@
 function P = cartesian_product(factors)
-%CARTESIAN_PRODUCT Computes the Cartesian products of cell arrays. 
+%CARTESIAN_PRODUCT(FACTORS) computes the cartesian product of the elements
+%in the cell array FACTORS.
 
     if ~iscell(factors)
         error('argument is not a cell array');

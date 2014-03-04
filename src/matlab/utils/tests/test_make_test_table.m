@@ -2,6 +2,15 @@ function tests = test_make_test_table
     tests = functiontests(localfunctions);
 end
 
+function setupOnce(testCase)
+    testCase.TestData.origPath = pwd();
+    cd(fullfile(mfiledir(), '..', 'private'));
+end
+
+function teardownOnce(testCase)
+    cd(testCase.TestData.origPath);
+end
+
 function setup(testCase)
     testCase.TestData.HappyPath = [2 3 4];
 end
@@ -135,7 +144,7 @@ function ok = make_test_table_tester_(sz, expanded)
     kt.Properties.VariableNames = kvars;
     vt = tt(:, vvars);
     if ~expanded
-        vt = cell2mat(cellmap(@expand, table2cell(vt)));
+        vt = cell2mat(cellmap(@expand_, table2cell(vt)));
         vt = arraymap(@(i) vt(:, i), 1:nd);
         vt = table(vt{:}, 'VariableNames', kvars);
         vvars = kvars;
@@ -157,18 +166,14 @@ end
 
 function kvs = getkeyvars_(tbl)
     vn = tbl.Properties.VariableNames;
-    kvs = vn(:, cellfun(@(s) strncmp(s, 'Key_', 4), vn));
+    kvs = vn(:, cell2mat(isstrprop(vn, 'upper')));
 end
 
 function vvs = getvalvars_(tbl, expanded)
     if expanded
         vn = tbl.Properties.VariableNames;
-        vvs = vn(:, cellfun(@(s) strncmp(s, 'value_', 6), vn));
+        vvs = vn(:, cell2mat(isstrprop(vn, 'lower')));
     else
         vvs = {'value'};
     end
-end
-
-function out = expand(n)
-    out = arrayfun(@str2num, int2str(n));
 end

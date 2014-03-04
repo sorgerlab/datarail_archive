@@ -1,67 +1,22 @@
-function P = collapse(tbl, varargin)
+function out = collapse(varargin)
+%COLLAPSE(TBL, KEYVARS, AGGNS) produces a new table from the table TBL by
+%    collapsing all the rows whose values in the variables KEYVARS (the "key
+%    variables") agree; the remaining variables (the "value variables") are computed
+%    by applying the functions specified in AGGNS to the original groups of values.
+%    AGGNS should be either a cell array of function handles, containing as many
+%    elements as there are value variables in TBL, or a single function handle (in
+%    which case the same function will be applied to all the value variables).
+%
+%COLLAPSE(TBL, KEYVARS) is equivalent to COLLAPSE(TBL, KEYVARS, @SUM).
+%
+%COLLAPSE(TBL) is equivalent to a call to COLLAPSE(TBL, KEYVARS) with KEYVARS
+%    set to hold the variables K of TBL for which ISCATEGORICAL(TBL.K) is true.
 
-    narginchk(1, 3);
-
-    if nargin > 1
-        keyvars = varargin{1};
-        if ~iscell(keyvars)
-            keyvars = {keyvars};
-        end
-        keyvars = keyvars(:).';
-    else
-        [~, keyvars] = guess_keyvars(tbl);
-        assert(isrow(keyvars));
-    end
-
-    valvars = setdiff(tbl.Properties.VariableNames, keyvars, 'stable');
-    assert(isrow(valvars));
-
-    m = numel(valvars);
-    if nargin > 2
-        aggns = varargin{2};
-        if iscell(aggns)
-            aggns = aggns(:).';
-            if (numel(aggns) ~= m)
-                % mismatch between number of aggregation functions specified
-                % and available input variables
-                error('inconsistent arguments');
-            end
-        end
-    else
-        aggns = @sum;
-    end
-
-    % --------------------------------------------------------------------------
-
-    P = collapse_(tbl, keyvars, valvars, aggns, m);
-    return;
-%     if m == 0
-%         P = unique(tbl);
-%     else
-%         if iscell(aggns)
-%             P = collapse_(tbl, keyvars, valvars, aggns);
-%         else
-%             P = varfun_(aggns, tbl, keyvars, valvars);
-%         end
-%     end
-% 
-%     P.Properties.RowNames = {};
+%    [tbl, kis, vis, aggrs, ~] = ...
+%        process_args__({'KeyVars' 'ValVars' 'Aggrs'}, varargin);
+%    kns = dr.vns(tbl, kis);
+%    vns = dr.vns(tbl, vis);
+    [tbl, kns, vns, aggrs, ~] = ...
+        process_args__({'KeyVars' 'ValVars' 'Aggrs'}, varargin);
+    out = collapse_(tbl, kns, vns, aggrs);
 end
-
-
-% function out = varfun_(fn, tbl, gv, iv)
-%     out = varfun(fn, tbl, 'GroupingVariables', gv, 'InputVariables', iv);
-%     out.GroupCount = [];
-%     out.Properties.VariableNames = [gv iv];
-% end
-% 
-%   
-% function out = collapse_(tbl, gv, iv, aggns)
-%     t0 = varfun_(aggns{1}, tbl, gv, iv(1, 1));
-%     if numel(iv) > 1
-%         t1 = collapse_(tbl, gv, iv(1, 2:end), aggns(1, 2:end));
-%         out = join(t0, t1, 'Keys', gv);
-%     else
-%         out = t0;
-%     end
-% end

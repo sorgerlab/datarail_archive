@@ -1,4 +1,10 @@
 function ndarray = ndcat(ndas, varargin)
+    % NDCAT(NDAS)
+    % NDCAT(NDAS, false)
+    % -> EXTERNAL indexing
+
+    % NDCAT(NDAS, true)
+    % -> INTERNAL indexing
     narginchk(1, 2);
     n = numel(ndas);
     if n == 0
@@ -11,7 +17,7 @@ function ndarray = ndcat(ndas, varargin)
     end
     d = numel(s1) + 1;
     ndarray = cat(d, ndas{:});
-    if nargin == 2 && varargin{1}
+    if nargin > 1 && varargin{1}
         ndarray = permute(ndarray, circshift(1:d, [0 1]));
     end
 end

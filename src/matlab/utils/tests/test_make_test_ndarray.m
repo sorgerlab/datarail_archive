@@ -2,6 +2,15 @@ function tests = test_make_test_ndarray
     tests = functiontests(localfunctions);
 end
 
+function setupOnce(testCase)
+    testCase.TestData.origPath = pwd();
+    cd(fullfile(mfiledir(), '..', 'private'));
+end
+
+function teardownOnce(testCase)
+    cd(testCase.TestData.origPath);
+end
+
 function setup(testCase)
     testCase.TestData.HappyPath = [2 3 4];
     testCase.TestData.SingleDim = 4;
@@ -21,139 +30,136 @@ end
 function test_happypath_expanded(testCase)
     sz = testCase.TestData.HappyPath;
     expanded = true;
-    verifyTrue(testCase, make_test_ndarray_tester_(sz, expanded));
+    make_test_ndarray_tester_(testCase, sz, expanded);
 end
 
 function test_happypath_collapsed(testCase)
     sz = testCase.TestData.HappyPath;
     expanded = false;
-    verifyTrue(testCase, make_test_ndarray_tester_(sz, expanded));
+    make_test_ndarray_tester_(testCase, sz, expanded);
 end
 
 %%
 function test_single_dim_expanded(testCase)
     sz = testCase.TestData.SingleDim;
     expanded = true;
-    verifyTrue(testCase, make_test_ndarray_tester_(sz, expanded));
+    make_test_ndarray_tester_(testCase, sz, expanded);
 end
 
 function test_single_dim_collapsed(testCase)
     sz = testCase.TestData.SingleDim;
     expanded = false;
-    verifyTrue(testCase, make_test_ndarray_tester_(sz, expanded));
+    make_test_ndarray_tester_(testCase, sz, expanded);
 end
 
 %%
 function test_single_dim_1_expanded(testCase)
     sz = testCase.TestData.SingleDim1;
     expanded = true;
-    verifyTrue(testCase, make_test_ndarray_tester_(sz, expanded));
+    make_test_ndarray_tester_(testCase, sz, expanded);
 end
 
 function test_single_dim_1_collapsed(testCase)
     sz = testCase.TestData.SingleDim1;
     expanded = false;
-    verifyTrue(testCase, make_test_ndarray_tester_(sz, expanded));
+    make_test_ndarray_tester_(testCase, sz, expanded);
 end
 
 %%
 function test_single_dim_2_expanded(testCase)
     sz = testCase.TestData.SingleDim2;
     expanded = true;
-    verifyTrue(testCase, make_test_ndarray_tester_(sz, expanded));
+    make_test_ndarray_tester_(testCase, sz, expanded);
 end
 
 function test_single_dim_2_collapsed(testCase)
     sz = testCase.TestData.SingleDim2;
     expanded = false;
-    verifyTrue(testCase, make_test_ndarray_tester_(sz, expanded));
+    make_test_ndarray_tester_(testCase, sz, expanded);
 end
 
 %%
 function test_trivial_dims_expanded(testCase)
     sz = testCase.TestData.TrivialDims;
     expanded = true;
-    verifyTrue(testCase, make_test_ndarray_tester_(sz, expanded));
+    make_test_ndarray_tester_(testCase, sz, expanded);
 end
 
 function test_trivial_dims_collapsed(testCase)
     sz = testCase.TestData.TrivialDims;
     expanded = false;
-    verifyTrue(testCase, make_test_ndarray_tester_(sz, expanded));
+    make_test_ndarray_tester_(testCase, sz, expanded);
 end
 
 %%
 function test_trivial_leading_dims_expanded(testCase)
     sz = testCase.TestData.TrivialLeadingDims;
     expanded = true;
-    verifyTrue(testCase, make_test_ndarray_tester_(sz, expanded));
+    make_test_ndarray_tester_(testCase, sz, expanded);
 end
 
 function test_trivial_leading_dims_collapsed(testCase)
     sz = testCase.TestData.TrivialLeadingDims;
     expanded = false;
-    verifyTrue(testCase, make_test_ndarray_tester_(sz, expanded));
+    make_test_ndarray_tester_(testCase, sz, expanded);
 end
 
 %%
 function test_trivial_trailing_dims_expanded(testCase)
     sz = testCase.TestData.TrivialTrailingDims;
     expanded = true;
-    verifyTrue(testCase, make_test_ndarray_tester_(sz, expanded));
+    make_test_ndarray_tester_(testCase, sz, expanded);
 end
 
 function test_trivial_trailing_dims_collapsed(testCase)
     sz = testCase.TestData.TrivialTrailingDims;
     expanded = false;
-    verifyTrue(testCase, make_test_ndarray_tester_(sz, expanded));
+    make_test_ndarray_tester_(testCase, sz, expanded);
 end
 
 %%
 function test_empty_expanded(testCase)
     sz = testCase.TestData.Empty;
     expanded = true;
-    verifyTrue(testCase, empty_tester_(sz, expanded));
+    empty_tester_(testCase, sz, expanded);
 end
 
 function test_empty_collapsed(testCase)
     sz = testCase.TestData.Empty;
     expanded = false;
-    verifyTrue(testCase, empty_tester_(sz, expanded));
+    empty_tester_(testCase, sz, expanded);
 end
 
 %%
 
-function ok = make_test_ndarray_tester_(sz, expanded)
+function make_test_ndarray_tester_(testCase, sz, expanded)
     nd = numel(sz);
     assert(nd > 0);
     n = prod(sz);
-
-    ta = reshape(make_test_ndarray(sz, expanded), n, []);
+    ta = dr.unroll(make_test_ndarray(sz, expanded), false);
     chk = logical(n);
     if expanded
         get = @(i) ta(i, :);
     else
-        get = @(i) expand(ta(i));
-    end
-    
-    function out = i2s_(i)
-        [idx{1:nd}] = ind2sub(sz, i);
-        out = cell2mat(idx);
+        get = @(i) expand_(ta(i));
     end
 
-    ok = all(arrayfun(@(i) isequal(i2s_(i), get(i)), 1:n));    
+    zs = fliplr(sz);
+    cls = class(ta);
+    function out = i2s_(i)
+        [idx{nd:-1:1}] = ind2sub(zs, i);
+        out = cast(cell2mat(idx), cls);
+    end
+
+    arrayfun(@(i) verifyEqual(testCase, get(i), i2s_(i)), 1:n);
 end
 
-function ok = empty_tester_(sz, expanded)
-    got = make_test_ndarray(sz, expanded);
+function empty_tester_(testCase, sz, expanded)
+    act = make_test_ndarray(sz, expanded);
     if expanded
-        exp = [];
+        exp = reshape([], [1, 0]);
     else
         exp = 0;
     end
-    ok = isequal(got, exp);
-end
-
-function out = expand(n)
-    out = arrayfun(@str2double, int2str(n));
+    verifyEqual(testCase, act, cast(exp, class(act)));
 end

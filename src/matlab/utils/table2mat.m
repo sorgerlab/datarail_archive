@@ -1,4 +1,4 @@
-function out = table2mat( tbl )
-    out = cell2mat(table2cell(tbl));
+function out = table2mat( varargin )
+    [tbl, ~, vns, ~, ~] = process_args__({'ValVars'}, varargin);
+    out = table2mat_(tbl, vns);
 end
-

@@ -2,6 +2,15 @@ function tests = test_table_to_ndarray
     tests = functiontests(localfunctions);
 end
 
+function setupOnce(testCase)
+    testCase.TestData.origPath = pwd();
+    cd(fullfile(mfiledir(), '..', 'private'));
+end
+
+function teardownOnce(testCase)
+    cd(testCase.TestData.origPath);
+end
+
 % function setup(testCase)
 %     testCase.TestData.HappyPath = [2 3 4];
 % end
@@ -14,12 +23,14 @@ function test_happypath(testCase)
     sz = [2 3 4];
     i2s = make_ind2sub(sz);
     n = prod(sz);
-    vs = reshape(arrayfun(@(i) collapse(i2s(i)), 1:n), [], 1);
+    vs = reshape(arrayfun(@(i) contract_(i2s(i)), 1:n), [], 1);
+    split = @dr.first;
+    join = @(a, b) [b a];
     function vns = lnames(lbls)
-        kvns = cellmap(@(t) t.Properties.VariableNames{1}, ...
-                       lbls(1:end-1));
-        vvns = lbls{end}{:, 1}.';
-        vns = [kvns vvns];
+        [vlbls, klbls] = split(lbls);
+        kvns = cellmap(@(t) t.Properties.VariableNames{1}, klbls);
+        vvns = cellstr(vlbls{:, 1}.');
+        vns = join(kvns, vvns);
     end
 
     % collapsed test table
@@ -29,11 +40,12 @@ function test_happypath(testCase)
         tt = make_test_table(sz, false);
         keyvars = tt.Properties.UserData('keyvars');
 
-        [ta, tl] = table_to_ndarray(tt, keyvars);
-        verifyEqual(testCase, ta(:), vs);
+        [ta, tl] = table_to_ndarray(tt, 'KeyVars', keyvars);
+        actual = ta(:);
+        verifyEqual(testCase, ta(:), cast(vs, class(actual)));
 
         valvars = tt.Properties.UserData('valvars');
-        varnames = [keyvars valvars];
+        varnames = join(keyvars, valvars);
         verifyEqual(testCase, lnames(tl), varnames);
     end
 
@@ -44,12 +56,14 @@ function test_happypath(testCase)
         tt = make_test_table(sz, true);
         keyvars = tt.Properties.UserData('keyvars');
 
-        [ta, tl] = table_to_ndarray(tt, keyvars);
-        c = num2cell(reshape(ta, [], size(ta, ndims(ta))), 2);
-        verifyEqual(testCase, cellfun(@(a) collapse(a), c), vs);
+        [ta, tl] = table_to_ndarray(tt, 'KeyVars', keyvars);
+%         c = num2cell(reshape(ta, [], size(ta, ndims(ta))), 2);
+        c = num2cell(dr.unroll(ta, false), 2);
+        actual = cellfun(@(a) contract_(a), c);
+        verifyEqual(testCase, actual, cast(vs, class(actual)));
 
         valvars = tt.Properties.UserData('valvars');
-        varnames = [keyvars valvars];
+        varnames = join(keyvars, valvars);
         verifyEqual(testCase, lnames(tl), varnames);
     end
 
@@ -57,10 +71,3 @@ function test_happypath(testCase)
     do_expanded_();
 end
 
-% function out = expand(n)
-%     out = arrayfun(@str2double, int2str(n));
-% end
-
-function out = collapse(idx)
-    out = str2double(arrayfun(@int2str, idx));
-end

@@ -1,15 +1,16 @@
-function P = collapse_(tbl, gv, iv, ag, m)
+function out = collapse_(tbl, gv, iv, ag)
+    nargoutchk(0, 3);
+    m = numel(iv);
     if m == 0
-        P = unique(tbl);
+        out = unique(tbl(:, gv));
     else
         if iscell(ag)
-            P = collapse__(tbl, gv, iv, ag);
+            out = collapse__(tbl, gv, iv, ag);
         else
-            P = varfun_(ag, tbl, gv, iv);
+            out = varfun_(ag, tbl, gv, iv);
         end
     end
-
-    P.Properties.RowNames = {};
+    out.Properties.RowNames = {};
 end
 
 function out = varfun_(fn, tbl, gv, iv)
