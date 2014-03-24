@@ -28,7 +28,6 @@ function tbl = make_test_table( sz, varargin )
         vns = {keyvars};
     end
 
-    keylevels = cellmap(@(l) categorical(l), keylevels);
     data = [keylevels vals];
     tbl = mktbl_(expanded, vns, data{:});
 end
