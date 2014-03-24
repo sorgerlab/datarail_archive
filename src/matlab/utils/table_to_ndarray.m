@@ -47,15 +47,19 @@ function [ndarray, labels] = table_to_ndarray(varargin)
 %                     original order of appearance.
 % 
 %           'Aggrs' - Either a function handle or a cell array of function
-%                     handles, specifying the functions for consolidating
-%                     the value variable entries of groups of rows that
-%                     have the same combination of keyvar entries.  If a
+%                     handles.  This parameter is required if the table
+%                     contains multiple rows for some combination of values
+%                     of the KEYVARS.  The function(s) specified by this
+%                     parameter will be used to aggregate the values of the
+%                     corresponding ValVars for each group of rows having
+%                     the same combination of values of the KEYVARS.  If a
 %                     function handle is specified, it is used for all the
 %                     value variables.  If a cell array of function handles
 %                     is specified, it must contain one function handle for
 %                     each value variable, in the same order as that of the
-%                     value variables.  If omitted, the default for this
-%                     parameter is a type-preserving analogue of @SUM.
+%                     value variables.  If every combination of values of
+%                     the KEYVARS is unique, and this parameter is omitted,
+%                     then it defaults to the identity function.
 % 
 %           'Outer' - A logical value: if TRUE (FALSE), the slices in the
 %                     resulting NDARRAY will corresponding to indices of

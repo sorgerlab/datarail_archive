@@ -5,11 +5,11 @@ function [tbl, kns, vns, aggrs, outer] = process_args__(tokeep, orig)
 
     p = inputParser;
     p.addRequired('tbl');
-    DEFAULT = make_sentinel();
-    %DEFAULT = [];
-    params = {'KeyVars', DEFAULT; ...
-              'ValVars', DEFAULT; ...
-              'Aggrs',   DEFAULT; ...
+    params = {'KeyVars', []; ...
+              'ValVars', []; ...
+              %'Aggrs',   @(x) sum(x, 'native'); ...
+              %'Aggrs',   @(x) x(1); ...
+              'Aggrs',   @fail_on_repeats; ...
               'Outer',   false};
 
     for kv = params.'
@@ -21,7 +21,6 @@ function [tbl, kns, vns, aggrs, outer] = process_args__(tokeep, orig)
         [varargout{1:nargout}] = c{:};
     end
     defaults = params(:, 2).';
-%     [kis, vis, aggrs, outer] = defaults{:};
     [kis, vis, aggrs, outer] = unpack_ca_(defaults);
     clear('defaults');
     p.parse(orig{:});
@@ -39,14 +38,12 @@ function [tbl, kns, vns, aggrs, outer] = process_args__(tokeep, orig)
         end
     else
         default_keyvars = true;
-        kis = [];
     end
 
     if keep('ValVars')
         if ismember('ValVars', p.UsingDefaults)
             vis = setdiff(find(arrayfun(@(i) ~iscategorical(tbl.(i)), ...
-                                        1:width(tbl))), ...
-                          kis, 'stable');
+                                        1:width(tbl))), kis, 'stable');
             assert(isrow(vis));
         else
             vis = dr.vidxs(tbl, args.ValVars);
@@ -55,37 +52,29 @@ function [tbl, kns, vns, aggrs, outer] = process_args__(tokeep, orig)
                        'non-empty keyvar-valvar intersection');
             end
         end
-%     else
-%         vis = [];
     end
 
     if keep('Aggrs')
         assert(keep('ValVars'));
-        if ismember('Aggrs', p.UsingDefaults)
-            aggrs = @(x) sum(x, 'native');
-        else
-            aggrs = args.Aggrs;
-        end
-        nvs = numel(vis);
+        aggrs = args.Aggrs;
         if iscell(aggrs)
-            assert(numel(aggrs) == nvs, ...
+            % if make it to here: user specified array of aggrs
+            assert(numel(aggrs) == numel(vis), ...
                    'numbers of valvars and aggregators differ');
         end
-%     else
-%         aggrs = {};
     end
 
     if keep('Outer')
         outer = args.Outer;
-%     else
-%         outer = false;
     end
 
     kns = dr.vns(tbl, kis);
     vns = dr.vns(tbl, vis);
-    clear('kis', 'vis');
+end
 
-    % out = {tbl kis vis aggrs outer};
-    % varargout = out(1:nargout);
-
+function x = fail_on_repeats(x)
+    if size(x, 1) ~= 1
+        error(['keyvars do not make up a key: ', ...
+               'aggregator(s) must be specified']);
+    end
 end
