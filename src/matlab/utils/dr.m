@@ -53,14 +53,6 @@ classdef dr
             [~, xs] = dr.last(xs_x);
         end
 
-        function b = isint(x)
-        %ISINT integer test.
-
-        % based on http://stackoverflow.com/a/6916862/559827
-            b = (x == floor(x));
-        end
-
-
 
         function ii = o2ii(offset, shape, colmajor, varargin)
         %O2II convert offset to indices for a given array shape, assuming
@@ -332,7 +324,7 @@ classdef dr
             d = numel(idxs);
             assert(d > 0 || nargin > 1 && varargin{1});
             ii = reshape(idxs, 1, []);
-            assert(all(dr.isint(ii)));
+            assert(all(isint(ii)));
         end
 
 
