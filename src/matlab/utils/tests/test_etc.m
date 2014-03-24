@@ -376,3 +376,118 @@ function [vi, vn] = guess_valvars( tbl, varargin )
         assert(isrow(vn));
     end
 end
+
+%{
+%%
+
+function test_hslice(testCase)
+    sh = [3 2 3 2 3];
+    nda = reshape(1:prod(sh), sh);
+    clear('sh');
+
+    for c1 = {nda num2cell(nda)}
+        tnd = c1{1};
+        for c2 = {2, 2:2, [3 1]}
+            ix = c2{1};
+            verifyEqual(testCase, hslice(tnd, 1, ix), tnd(ix, :, :, :, :));
+            verifyEqual(testCase, hslice(tnd, 3, ix), tnd(:, :, ix, :, :));
+            verifyEqual(testCase, hslice(tnd, 5, ix), tnd(:, :, :, :, ix));
+        end
+        warning('off', 'hslice:alreadySlice');
+        verifyEqual(testCase, hslice(tnd, 7, 1), tnd(:, :, :, :, :, :, 1));
+        verifyEqual(testCase, hslice(tnd, 7, [1 1]), ...
+                              tnd(:, :, :, :, :, :, [1 1]));
+        warning('off', 'hslice:alreadySlice');
+    end
+end
+
+
+%%
+function test_tomaxdims(testCase)
+
+    iis = {1:1, 2:3, 4:6};
+    jjs = {1:2, 3:5, 6:9};
+    kks = {1:2, 3:5, 6:6};
+
+    sh = cellfun(@(c) max(cell2mat(c(end))), {iis, jjs, kks});
+
+    A = num2cell(reshape(1:prod(sh), sh));
+    %A = num2cell(dr.mkslab(sh, true, true));
+
+    B = cell(numel(iis), numel(jjs), numel(kks));
+
+    for i = 1:3
+        Si = hslice(A, 1, iis{i});
+        for j = 1:3
+            Sj = hslice(Si, 2, jjs{j});
+            for k = 1:3
+                B{i, j, k} = hslice(Sj, 3, kks{k});
+            end
+        end
+    end
+
+    verifyEqual(testCase, tomaxdims(B), A);
+
+    C = cell(numel(iis), 1);
+    for i = 1:3
+        Ci = cell(numel(jjs), 1);
+        Si = hslice(A, 1, iis{i});
+        for j = 1:3
+            Cij = cell(numel(kks), 1);
+            Sj = hslice(Si, 2, jjs{j});
+            for k = 1:3
+                Cij{k} = hslice(Sj, 3, kks{k});
+            end
+            Ci{j} = Cij;
+        end
+        C{i} = Ci;
+    end
+    
+    verifyEqual(testCase, tomaxdims(C), A);
+
+end
+
+%%
+function test_slice1_(testCase)
+
+    iis = {1:1, 2:3, 4:6};
+    jjs = {1:2, 3:5, 6:9};
+    kks = {1:2, 3:5, 6:6};
+
+    sh = cellfun(@(c) max(cell2mat(c(end))), {iis, jjs, kks});
+    idxs = cellmap(@(c) cellfun(@numel, c), {iis jjs kks});
+
+    A = num2cell(reshape(1:prod(sh), sh));
+    %A = num2cell(dr.mkslab(sh, true, true));
+
+    B = cell(numel(iis), numel(jjs), numel(kks));
+
+    for i = 1:3
+        Si = hslice(A, 1, iis{i});
+        for j = 1:3
+            Sj = hslice(Si, 2, jjs{j});
+            for k = 1:3
+                B{i, j, k} = hslice(Sj, 3, kks{k});
+            end
+        end
+    end
+    verifyEqual(testCase, B, slice1_(A, idxs));
+
+    C = cell(numel(iis), 1);
+    for i = 1:3
+        Ci = cell(numel(jjs), 1);
+        Si = hslice(A, 1, iis{i});
+        for j = 1:3
+            Cij = cell(numel(kks), 1);
+            Sj = hslice(Si, 2, jjs{j});
+            for k = 1:3
+                Cij{k} = hslice(Sj, 3, kks{k});
+            end
+            Ci{j} = Cij;
+        end
+        C{i} = Ci;
+    end
+
+    verifyEqual(testCase, C, slice1_(A, idxs, true))
+end
+%}
