@@ -1,18 +1,28 @@
-function tbl = ndarray_to_table(ndarray, labels)
+function tbl = ndarray_to_table(ndarray, labels, varargin)
+%NDARRAY_TO_TABLE convert table to nd-array.
+%     T = NDARRAY_TO_TABLE(A, L) converts nd-array A to table T,
+%     having columns as specified by L.
+%
+%     T = NDARRAY_TO_TABLE(A, L, OUTER) like the previous form, but if
+%     OUTER is true, assume that the dimensions of A are ordered as
+%     described in the documentation for the OUTER parameter of the
+%     function TABLE_TO_NDARRAY.
 
-    ndsz = size(ndarray);
-    % lbsz = cell2mat(cellmap(@numel_, labels));
-    % lbsz = lbsz(1:find(x~=1, 1, 'last'));
+    narginchk(2, 3);
+    outer = nargin > 2 && varargin{1};
 
-    % assert(isequal(ndsz, lbsz));
-    vvs = labels{end};
-    labels = labels(1:end-1);
+    if outer
+        labels = circshift(labels, [0 1]);
+    end
+    vvs = labels{1};
+    labels = labels(2:end);
 
     if ischar(vvs)
         vvs = {vvs};
-    elseif istable(vvs)
-        vvs = vvs{:, :}.';
     else
+        if istable(vvs)
+            vvs = cellstr(vvs.(1));
+        end
         vvs = reshape(vvs, 1, []);
     end
 
@@ -21,34 +31,17 @@ function tbl = ndarray_to_table(ndarray, labels)
     keys = cartesian_product(levels);
 
     m = numel(ndarray);
-    nd = ndims(ndarray);
-    p = nd:-1:1;
+    n = ndims(ndarray);
+    p = n:-1:1;
     if numel(vvs) > 1
-        m = m/ndsz(end);
-        p = circshift(p, [0 -1]);
-        nd = nd - 1;
+        m = m/numel(vvs);
+        if outer
+            p = circshift(p, [0 -1]);
+        end
     end
-    assert(nd == numel(keys));
+    assert(n - (numel(vvs) > 1 || ~outer) == numel(keys));
+
     values = num2cell(reshape(permute(ndarray, p), m, []), 1);
     data = [keys values];
     tbl = make_table(data, kvs, vvs);
 end
-
-% function out = levels_(lbl)
-%     out = lbl{:, 1};
-%     return;
-%     cls = class(out);
-%     if iscategorical(out)
-%         out = cellstr(out);
-%     elseif isnumeric(out)
-%         out = num2cell(out);
-%     end
-% end
-  
-% function n = numel_(seq)
-%     if istable(seq)
-%         n = height(seq);
-%     else
-%         n = numel(seq);
-%     end
-% end
