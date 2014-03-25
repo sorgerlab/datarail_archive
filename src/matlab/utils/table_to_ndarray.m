@@ -18,19 +18,12 @@ function [ndarray, labels] = table_to_ndarray(varargin)
 %                     one-dimensional value (e.g. a numeric vector)
 %                     resolvable to such.  If, after resolving all the
 %                     specified variables, duplicates are detected, an
-%                     exception is raised.  If the KEYVARS parameter is not
-%                     specified, the function uses the heuristic of taking
-%                     as key variables those for which the ISCATEGORICAL
+%                     exception is raised.  
+%
+%                     DEFAULT: variables of TBL for which the ISCATEGORICAL
 %                     predicate returns TRUE (ordered according to their
-%                     original ordering among TBL's variables).  (NOTE:
-%                     This selection heuristic should not be construed as a
-%                     requirement that key variables be categorical,
-%                     although this is often a good idea.)  If an empty
-%                     list of key variables is specified, the resulting
-%                     NDARRAY is the vector obtained by applying the
-%                     aggregator function(s) (see AGGRS below) to the value
-%                     variables.
-% 
+%                     original ordering among TBL's variables).
+%
 %         'ValVars' - Variables of TBL to use as value variables.  The
 %                     ordering of the variables in this parameter
 %                     determines the ordering of the corresponding slices
@@ -40,9 +33,9 @@ function [ndarray, labels] = table_to_ndarray(varargin)
 %                     thereof, or some one-dimensional value (e.g. a
 %                     numeric vector) resolvable to such.  Repeated value
 %                     variables are preserved (and will result in repeated
-%                     slices in the resulting NDARRAY).  If the VALVARS
-%                     parameter is not specified, the function uses the
-%                     subset of TBL's non-keyvar variables for which the
+%                     slices in the resulting NDARRAY).  
+%
+%                     DEFAULT: non-key variables of TBL for which the
 %                     ISCATEGORICAL predicate returns FALSE, in their
 %                     original order of appearance.
 % 
@@ -51,15 +44,16 @@ function [ndarray, labels] = table_to_ndarray(varargin)
 %                     contains multiple rows for some combination of values
 %                     of the KEYVARS.  The function(s) specified by this
 %                     parameter will be used to aggregate the values of the
-%                     corresponding ValVars for each group of rows having
+%                     corresponding VALVARS for each group of rows having
 %                     the same combination of values of the KEYVARS.  If a
 %                     function handle is specified, it is used for all the
 %                     value variables.  If a cell array of function handles
 %                     is specified, it must contain one function handle for
-%                     each value variable, in the same order as that of the
-%                     value variables.  If every combination of values of
-%                     the KEYVARS is unique, and this parameter is omitted,
-%                     then it defaults to the identity function.
+%                     each value variable.
+%
+%                     DEFAULT: (applicable only if every combination of
+%                     values of the KEYVARS is unique) the identity
+%                     function.
 % 
 %           'Outer' - A logical value: if TRUE (FALSE), the slices in the
 %                     resulting NDARRAY will corresponding to indices of
@@ -69,7 +63,9 @@ function [ndarray, labels] = table_to_ndarray(varargin)
 %                     dimensions (where K is the number of key variables);
 %                     otherwise it will have K + 1 dimensions.  The reason
 %                     for this is that MATLAB automatically neglects
-%                     trailing dimensions of size 1.  Default: FALSE.
+%                     trailing dimensions of size 1.
+%
+%                     DEFAULT: FALSE.
 
     [tbl, kns, vns, aggrs, outer] = ...
         process_args__({'KeyVars' 'ValVars' 'Aggrs' 'Outer'}, varargin);
