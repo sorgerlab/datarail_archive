@@ -11,14 +11,6 @@ function teardownOnce(testCase)
     cd(testCase.TestData.origPath);
 end
 
-% function setup(testCase)
-%     testCase.TestData.HappyPath = [2 3 4];
-% end
-    
-% function teardown(testCase)
-%     testCase.TestData.Table = [];
-% end
-
 function test_happypath(testCase)
     sz = [2 3 4];
     i2s = make_ind2sub(sz);
@@ -71,3 +63,23 @@ function test_happypath(testCase)
     do_expanded_();
 end
 
+function test_collapse_1(testCase)
+    sz = [2 3 4]; expanded = true;
+    T1 = make_test_table(sz, expanded);
+    [A1, L1] = table_to_ndarray(T1);
+    T2 = vertcat(T1, T1, T1);
+    [A2, L2] = table_to_ndarray(T2, 'Aggrs', @(x) sum(x, 'native'));
+    verifyEqual(testCase, A2, 3 * A1);
+end
+
+function test_collapse_2(testCase)
+    for outer = [false true]
+        sz = [2 3 4]; expanded = true;
+        T1 = make_test_table(sz, expanded);
+        [A1, L1] = table_to_ndarray(T1, 'Outer', outer);
+        T2 = vertcat(T1, T1, T1);
+        [A2, L2] = table_to_ndarray(T2, 'Aggrs', @(x) sum(x, 'native'), ...
+                                        'Outer', outer);
+        verifyEqual(testCase, A2, 3 * A1);
+    end
+end
