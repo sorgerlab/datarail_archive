@@ -66,9 +66,9 @@ end
 function test_collapse_1(testCase)
     sz = [2 3 4]; expanded = true;
     T1 = make_test_table(sz, expanded);
-    [A1, L1] = table_to_ndarray(T1);
+    A1 = table_to_ndarray(T1);
     T2 = vertcat(T1, T1, T1);
-    [A2, L2] = table_to_ndarray(T2, 'Aggrs', @(x) sum(x, 'native'));
+    A2 = table_to_ndarray(T2, 'Aggrs', @(x) sum(x, 'native'));
     verifyEqual(testCase, A2, 3 * A1);
 end
 
@@ -76,10 +76,22 @@ function test_collapse_2(testCase)
     for outer = [false true]
         sz = [2 3 4]; expanded = true;
         T1 = make_test_table(sz, expanded);
-        [A1, L1] = table_to_ndarray(T1, 'Outer', outer);
+        A1 = table_to_ndarray(T1, 'Outer', outer);
         T2 = vertcat(T1, T1, T1);
-        [A2, L2] = table_to_ndarray(T2, 'Aggrs', @(x) sum(x, 'native'), ...
-                                        'Outer', outer);
+        A2 = table_to_ndarray(T2, 'Aggrs', @(x) sum(x, 'native'), ...
+                                  'Outer', outer);
         verifyEqual(testCase, A2, 3 * A1);
     end
+end
+
+function test_100(testCase)
+    sz = [2 3 4]; expanded = false;
+    T0 = make_test_table(sz, expanded);
+    T1 = T0(:, [4 1 2 3]);
+
+    A1 = table_to_ndarray(T1);
+    T2 = vertcat(T1, T1, T1);
+    A2 = table_to_ndarray(T2, 'Aggrs', @(x) sum(x, 'native'), ...
+                              'KeyVars', [2 3 4], 'ValVars', 1);
+    verifyEqual(testCase, A2, 3 * A1);
 end

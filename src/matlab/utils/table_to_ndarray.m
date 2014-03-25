@@ -72,7 +72,7 @@ function [ndarray, labels] = table_to_ndarray(varargin)
 
     ftbl = table_to_factorial_(tbl, kns, vns, aggrs);
 
-    [ii, levels] = tbl_ndarray_ordering_(ftbl, dr.vidxs(tbl, kns));
+    [ii, levels] = tbl_ndarray_ordering_(ftbl, dr.vidxs(ftbl, kns));
 
     sh = cellfun(@numel, levels);
     assert(prod(sh) == height(ftbl), 'first argument is not factorial');
