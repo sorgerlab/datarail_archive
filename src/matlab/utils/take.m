@@ -1,7 +1,9 @@
 function out = take(seq, n)
     [l, d] = length_(seq);
     if n > l
-      out = seq;
+        out = seq;
+    elseif istable(seq)
+        out = seq(1:n, :);
     else
       sz = size(seq);
       sz(d) = n;
