@@ -5,6 +5,15 @@ function out = group_counts(tbl, varargin)
 % 
 %     T2 = GROUP_COUNTS(T1)
 %
+%     Returns a table whose columns correspond to KEYVARS plus an
+%     additional column holding the numbers of rows in T1 having each
+%     available combination of values of the variables in KEYVARS.
+
+%     If KEYVARS is omitted, the default is computed as described in
+%     the documentation for the KEYVARS parameter of the function
+%     TABLE_TO_NDARRAY.
+%
+
     narginchk(1, 2);
     if nargin > 1
         params = {'KeyVars', varargin{1}};
