@@ -21,7 +21,7 @@ function setup(testCase)
     testCase.TestData.SingleDim2 = [4 1 1];
     testCase.TestData.Empty = [];
 end
-    
+
 function teardown(testCase)
     testCase.TestData.HappyPath = [];
 end

@@ -29,7 +29,7 @@ function tt = make_test_table_(sz, expanded)
                 'keyvars', guess_keyvars(tbl), ...
                 'valvars', guess_valvars(tbl));
 end
-    
+
 function teardown(testCase)
 end
 
@@ -42,7 +42,7 @@ function test_cartproduct_ds(testCase)
     exp = [1 1 1; 1 1 2; 1 1 3; 1 1 4; 1 2 1; 1 2 2; 1 2 3; 1 2 4; 1 3 1; ...
            1 3 2; 1 3 3; 1 3 4; 2 1 1; 2 1 2; 2 1 3; 2 1 4; 2 2 1; 2 2 2; ...
            2 2 3; 2 2 4; 2 3 1; 2 3 2; 2 3 3; 2 3 4];
-       
+
     % the expected value above was generated with
     % exp = fliplr(cell2mat(arraymap(make_ind2sub(fliplr(sz)), (1:n)')));
 
@@ -123,9 +123,9 @@ function test_make_test_values(testCase)
     E11 = [1 1 1; 2 1 1; 1 2 1; 2 2 1; 1 3 1; 2 3 1; 1 1 2; 2 1 2;
            1 2 2; 2 2 2; 1 3 2; 2 3 2; 1 1 3; 2 1 3; 1 2 3; 2 2 3;
            1 3 3; 2 3 3; 1 1 4; 2 1 4; 1 2 4; 2 2 4; 1 3 4; 2 3 4];
-       
+
     verifyEqual(testCase, make_test_values(sz, i, j), E11);
-   
+
 end
 
 
@@ -172,9 +172,9 @@ function test_make_test_nd(testCase)
     E11 = [1 1 1; 2 1 1; 1 2 1; 2 2 1; 1 3 1; 2 3 1; 1 1 2; 2 1 2;
            1 2 2; 2 2 2; 1 3 2; 2 3 2; 1 1 3; 2 1 3; 1 2 3; 2 2 3;
            1 3 3; 2 3 3; 1 1 4; 2 1 4; 1 2 4; 2 2 4; 1 3 4; 2 3 4];
-       
+
     verifyEqual(testCase, make_test_values(sz, i, j), E11);
-   
+
 end
 
 %%
@@ -442,7 +442,7 @@ function test_tomaxdims(testCase)
         end
         C{i} = Ci;
     end
-    
+
     verifyEqual(testCase, tomaxdims(C), A);
 
 end

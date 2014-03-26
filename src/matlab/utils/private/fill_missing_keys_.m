@@ -28,7 +28,7 @@ function P = fill_missing_keys_(tbl, kns)
     missing = find(itbl == 0); assert(~isempty(missing));
     h = height(P);
     g = h - numel(missing) + 1;
-    assert(all(itbl < g)); 
+    assert(all(itbl < g));
     itbl(missing) = (g:h).';
     idx(itbl, 1) = (1:h).';
     P = P(idx, :);

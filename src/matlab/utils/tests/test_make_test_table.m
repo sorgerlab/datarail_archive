@@ -14,7 +14,7 @@ end
 function setup(testCase)
     testCase.TestData.HappyPath = [2 3 4];
 end
-    
+
 function teardown(testCase)
     testCase.TestData.HappyPath = [];
 %     testCase.TestData.SingleDim = 4;
@@ -45,91 +45,91 @@ end
 %     expanded = true;
 %     verifyTrue(testCase, make_test_table_tester_(sz, expanded));
 % end
-% 
+%
 % function test_single_dim_collapsed(testCase)
 %     sz = testCase.TestData.SingleDim;
 %     expanded = false;
 %     verifyTrue(testCase, make_test_table_tester_(sz, expanded));
 % end
-% 
+%
 % %%
 % function test_single_dim_1_expanded(testCase)
 %     sz = testCase.TestData.SingleDim1;
 %     expanded = true;
 %     verifyTrue(testCase, make_test_table_tester_(sz, expanded));
 % end
-% 
+%
 % function test_single_dim_1_collapsed(testCase)
 %     sz = testCase.TestData.SingleDim1;
 %     expanded = false;
 %     verifyTrue(testCase, make_test_table_tester_(sz, expanded));
 % end
-% 
+%
 % %%
 % function test_single_dim_2_expanded(testCase)
 %     sz = testCase.TestData.SingleDim2;
 %     expanded = true;
 %     verifyTrue(testCase, make_test_table_tester_(sz, expanded));
 % end
-% 
+%
 % function test_single_dim_2_collapsed(testCase)
 %     sz = testCase.TestData.SingleDim2;
 %     expanded = false;
 %     verifyTrue(testCase, make_test_table_tester_(sz, expanded));
 % end
-% 
+%
 % %%
 % function test_trivial_dims_expanded(testCase)
 %     sz = testCase.TestData.TrivialDims;
 %     expanded = true;
 %     verifyTrue(testCase, make_test_table_tester_(sz, expanded));
 % end
-% 
+%
 % function test_trivial_dims_collapsed(testCase)
 %     sz = testCase.TestData.TrivialDims;
 %     expanded = false;
 %     verifyTrue(testCase, make_test_table_tester_(sz, expanded));
 % end
-% 
+%
 % %%
 % function test_trivial_leading_dims_expanded(testCase)
 %     sz = testCase.TestData.TrivialLeadingDims;
 %     expanded = true;
 %     verifyTrue(testCase, make_test_table_tester_(sz, expanded));
 % end
-% 
+%
 % function test_trivial_leading_dims_collapsed(testCase)
 %     sz = testCase.TestData.TrivialLeadingDims;
 %     expanded = false;
 %     verifyTrue(testCase, make_test_table_tester_(sz, expanded));
 % end
-% 
+%
 % %%
 % function test_trivial_trailing_dims_expanded(testCase)
 %     sz = testCase.TestData.TrivialTrailingDims;
 %     expanded = true;
 %     verifyTrue(testCase, make_test_table_tester_(sz, expanded));
 % end
-% 
+%
 % function test_trivial_trailing_dims_collapsed(testCase)
 %     sz = testCase.TestData.TrivialTrailingDims;
 %     expanded = false;
 %     verifyTrue(testCase, make_test_table_tester_(sz, expanded));
 % end
-% 
+%
 % %%
 % function test_empty_expanded(testCase)
 %     sz = testCase.TestData.Empty;
 %     expanded = true;
 %     verifyTrue(testCase, empty_tester_(sz, expanded));
 % end
-% 
+%
 % function test_empty_collapsed(testCase)
 %     sz = testCase.TestData.Empty;
 %     expanded = false;
 %     verifyTrue(testCase, empty_tester_(sz, expanded));
 % end
-% 
+%
 % %%
 
 function ok = make_test_table_tester_(sz, expanded)

@@ -15,6 +15,6 @@ for v = dset.Properties.VarNames
 end
 if not(isempty(dropset))
   dset = dropcols(dset, dropset);
-end    
+end
 
 % TODO: drop null rows

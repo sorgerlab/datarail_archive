@@ -2,7 +2,7 @@ function out = nth(ndarray, n, dims)
 
 %NTH gets the N-th k-dimensional subarray of NDARRAY, whose k
 %   dimensions are given in DIMS
-%   
+%
 % [ Description ]
 %   - out = nth(NDARRAY, N, DIMS)
 %

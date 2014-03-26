@@ -218,7 +218,7 @@ classdef dr
         %     [o, sh, d] = dr.chk_o2ii_args(offset, shape, base);
         %     ii = dr.BASE + dr.o2ii_rm_(o, sh, d);
         % end
-                
+
 
         function nn = vns(tbl, varargin)
             narginchk(1, 2);
@@ -470,7 +470,7 @@ classdef dr
                 sh = [shape 1];
             end
         end
-            
+
 
         function out = ith_(x, i)
             if iscell(x)

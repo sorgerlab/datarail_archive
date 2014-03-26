@@ -26,48 +26,48 @@ function out = slice1_( cellarray, widths, varargin )
 %
 %    Example
 %    If A, B, and C are initialized as follows:
-%      
+%
 %    A = [11 12 13 14 15 16; ...
 %         21 22 23 24 25 26; ...
 %         31 32 33 34 35 36; ...
 %         41 42 43 44 45 46; ...
 %         51 52 53 54 55 56; ...
 %         61 62 63 64 65 66];
-% 
+%
 %    B = slice1_(A, {[1 2 3] [1 2 3]});
 %    C = slice1_(A, {[1 2 3] [1 2 3]}, true);
-% 
+%
 %    ...then each B{i, j} and each C{i}{j} is an i-by-j cell array.  E.g.
-% 
+%
 %    >> cell2mat(B{2, 3})
 %    ans =
 %        24    25    26
 %        34    35    36
-% 
+%
 %    >> cell2mat(C{2}{3})
 %    ans =
 %        24    25    26
 %        34    35    36
-% 
+%
 %    In fact, B will be a 3-by-3 cell array:
-% 
-%    B = 
+%
+%    B =
 %        {1x1 cell}    {1x2 cell}    {1x3 cell}
 %        {2x1 cell}    {2x2 cell}    {2x3 cell}
 %        {3x1 cell}    {3x2 cell}    {3x3 cell}
-% 
+%
 %    ...and C will be a 3-by-1 cell array:
-% 
-%    C = 
+%
+%    C =
 %        {3x1 cell}
 %        {3x1 cell}
 %        {3x1 cell}
 
     narginchk(2, 3);
     serial = nargin > 2 && varargin{1};
-    
+
     [cellarray, idxs] = process_args_(cellarray, widths);
-    
+
     if serial
         out = serial_slice_(cellarray, idxs, 1);
     else

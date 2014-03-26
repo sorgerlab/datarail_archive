@@ -71,7 +71,7 @@ if isempty(S) && ischar(S)
 else
    error(ErrID, 'Failed for empty cell.');
 end
-   
+
 S = CStr2String(cell(1, 1));
 if isempty(S) && ischar(S)
    disp('  ok: {NULL}');
@@ -135,7 +135,7 @@ if isempty(S) && ischar(S)
 else
    error(ErrID, 'Failed for empty cell, ''|''.');
 end
-   
+
 S = CStr2String(cell(1, 1), '|');
 if isequal(S, '|')
    disp('  ok: {NULL}, ''|''');
@@ -283,7 +283,7 @@ while cputime - iniTime < randDelay
       if ~strcmp(CStr2String_L(C), CStr2String(C))
          error(ErrID, 'Failed for random test.');
       end
-      
+
       if ~strcmp(CStr2String_L(C, '#'), CStr2String(C, '#'))
          error(ErrID, 'Failed for random test with separator.');
       end
@@ -316,7 +316,7 @@ if useMex  % Less checks of inputs in M-version:
    if tooLazy
       error(ErrID, '{1} not rejected.');
    end
-   
+
    try
       dummy   = CStr2String({'1', 2});
       tooLazy = true;
@@ -327,7 +327,7 @@ if useMex  % Less checks of inputs in M-version:
    if tooLazy
       error(ErrID, '{''1'', 2} not rejected.');
    end
-   
+
    try
       dummy   = CStr2String({'1'}, []);
       tooLazy = true;
@@ -338,7 +338,7 @@ if useMex  % Less checks of inputs in M-version:
    if tooLazy
       error(ErrID, '({''1''}, []) not rejected.');
    end
-   
+
    try
       dummy   = CStr2String({'1'}, '#', struct('asd', 'bsd'));
       tooLazy = true;
@@ -349,7 +349,7 @@ if useMex  % Less checks of inputs in M-version:
    if tooLazy
       error(ErrID, '({''1''}, ''#'', STRUCT) not rejected.');
    end
-   
+
    try
       dummy   = CStr2String({['1'; '2']});
       tooLazy = true;
@@ -360,7 +360,7 @@ if useMex  % Less checks of inputs in M-version:
    if tooLazy
       error(ErrID, '({[''1''; ''2'']}) not rejected.');
    end
-   
+
    try
       dummy   = CStr2String({['1'; '2']}, '#');
       tooLazy = true;
@@ -392,14 +392,14 @@ fprintf('\n');
 aChar = 'a';
 for aDataLen = DataLen
    fprintf('  String lengths: %d\n', aDataLen);
-   
+
    fprintf('    SPRINTF(%%s, C{:})  ');
    for aCellLen = CellLen
       CStr = cell(1, aCellLen);
       for iC = 1:aCellLen
          CStr{iC} = aChar(ones(1, aDataLen));
       end
-      
+
       % Get number of loops (the WHILE CPUTIME loop has more overhead):
       iTime = cputime;
       N = 0;
@@ -426,7 +426,7 @@ for aDataLen = DataLen
       for iC = 1:aCellLen
          CStr{iC} = aChar(ones(1, aDataLen));
       end
-      
+
       % Get number of loops (the WHILE CPUTIME loop has more overhead):
       iTime = cputime;
       N = 0;
@@ -435,7 +435,7 @@ for aDataLen = DataLen
          N = N + 1;
       end
       N = max(1, round(N / (cputime - iTime) * SpeedTime));
-      
+
       % The actual test:
       tic;
       for iN = 1:N
@@ -453,7 +453,7 @@ for aDataLen = DataLen
       for iC = 1:aCellLen
          CStr{iC} = aChar(ones(1, aDataLen));
       end
-      
+
       % Get number of loops (the WHILE CPUTIME loop has more overhead):
       iTime = cputime;
       N = 0;
@@ -462,7 +462,7 @@ for aDataLen = DataLen
          N = N + 1;
       end
       N = max(1, round(N / (cputime - iTime) * SpeedTime));
-      
+
       % The actual test:
       tic;
       for iN = 1:N
@@ -473,7 +473,7 @@ for aDataLen = DataLen
       drawnow;  % Allow update of external events
    end
    fprintf('  loops/sec\n');
-   
+
    % ********
    fprintf('    [C{:}]  (HORZCAT!) ');
    for aCellLen = CellLen
@@ -481,7 +481,7 @@ for aDataLen = DataLen
       for iC = 1:aCellLen
          CStr{iC} = aChar(ones(1, aDataLen));
       end
-      
+
       % Get number of loops (the WHILE CPUTIME loop has more overhead):
       iTime = cputime;
       N = 0;
@@ -490,7 +490,7 @@ for aDataLen = DataLen
          N = N + 1;
       end
       N = max(1, round(N / (cputime - iTime) * SpeedTime));
-      
+
       % The actual test:
       tic;
       for iN = 1:N
@@ -501,7 +501,7 @@ for aDataLen = DataLen
       drawnow;  % Allow update of external events
    end
    fprintf('  loops/sec\n');
-   
+
    % *********
    fprintf('    CStr2String(C)     ');
    for aCellLen = CellLen
@@ -509,7 +509,7 @@ for aDataLen = DataLen
       for iC = 1:aCellLen
          CStr{iC} = aChar(ones(1, aDataLen));
       end
-      
+
       % Get number of loops (the WHILE CPUTIME loop has more overhead):
       iTime = cputime;
       N = 0;
@@ -518,7 +518,7 @@ for aDataLen = DataLen
          N = N + 1;
       end
       N = max(1, round(N / (cputime - iTime) * SpeedTime));
-      
+
       % The actual test:
       tic;
       for iN = 1:N
@@ -529,7 +529,7 @@ for aDataLen = DataLen
       drawnow;  % Allow update of external events
    end
    fprintf('  loops/sec\n');
-   
+
    fprintf('    CStr2String(C, #)  ');
    for aCellLen = CellLen
       Sep  = 'Sep';
@@ -537,7 +537,7 @@ for aDataLen = DataLen
       for iC = 1:aCellLen
          CStr{iC} = aChar(ones(1, aDataLen));
       end
-      
+
       % Get number of loops (the WHILE CPUTIME loop has more overhead):
       iTime = cputime;
       N = 0;
@@ -546,7 +546,7 @@ for aDataLen = DataLen
          N = N + 1;
       end
       N = max(1, round(N / (cputime - iTime) * SpeedTime));
-      
+
       % The actual test:
       tic;
       for iN = 1:N
@@ -586,5 +586,5 @@ end
 if isempty(String)
    String = '';
 end
-   
+
 return;

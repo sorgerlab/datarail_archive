@@ -7,7 +7,7 @@ function factorial_table = table_to_factorial(varargin)
 %     TABLE_TO_FACTORIAL's behavior.  These parameters are listed below,
 %     and their documentation is identical to those of the same-named
 %     parameters for the function TABLE_TO_NDARRAY.
-% 
+%
 %         'KeyVars'
 %         'ValVars'
 %         'Aggrs'

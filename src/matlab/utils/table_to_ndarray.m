@@ -8,7 +8,7 @@ function [ndarray, labels] = table_to_ndarray(varargin)
 %     A = TABLE_TO_NDARRAY(TBL, 'PARAM1',val1, 'PARAM2',val2, ...) allows
 %     you to specify optional parameter name/value pairs to control
 %     TABLE_TO_NDARRAY's behavior.  Parameters are:
-% 
+%
 %         'KeyVars' - Variables of TBL to use as key variables.  The
 %                     ordering of the variables in this parameter affects
 %                     the ordering of the dimensions of the resulting
@@ -18,7 +18,7 @@ function [ndarray, labels] = table_to_ndarray(varargin)
 %                     one-dimensional value (e.g. a numeric vector)
 %                     resolvable to such.  If, after resolving all the
 %                     specified variables, duplicates are detected, an
-%                     exception is raised.  
+%                     exception is raised.
 %
 %                     DEFAULT: variables of TBL for which the ISCATEGORICAL
 %                     predicate returns TRUE (ordered according to their
@@ -33,12 +33,12 @@ function [ndarray, labels] = table_to_ndarray(varargin)
 %                     thereof, or some one-dimensional value (e.g. a
 %                     numeric vector) resolvable to such.  Repeated value
 %                     variables are preserved (and will result in repeated
-%                     slices in the resulting NDARRAY).  
+%                     slices in the resulting NDARRAY).
 %
 %                     DEFAULT: non-key variables of TBL for which the
 %                     ISCATEGORICAL predicate returns FALSE, in their
 %                     original order of appearance.
-% 
+%
 %           'Aggrs' - Either a function handle or a cell array of function
 %                     handles.  This parameter is required if the table
 %                     contains multiple rows for some combination of values
@@ -54,7 +54,7 @@ function [ndarray, labels] = table_to_ndarray(varargin)
 %                     DEFAULT: (applicable only if every combination of
 %                     values of the KEYVARS is unique) the identity
 %                     function.
-% 
+%
 %           'Outer' - A logical value: if TRUE (FALSE), the slices in the
 %                     resulting NDARRAY will corresponding to indices of
 %                     NDARRAY's last (first) dimension.  Note that if the

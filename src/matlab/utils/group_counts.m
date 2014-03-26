@@ -2,7 +2,7 @@ function out = group_counts(tbl, varargin)
 %GROUP_COUNTS count numbers of rows in groupings.
 %
 %     T2 = GROUP_COUNTS(T1 [, KEYVARS])
-% 
+%
 %     Returns a table whose columns correspond to KEYVARS plus an
 %     additional column holding the numbers of rows in T1 having each
 %     available combination of values of the variables in KEYVARS.

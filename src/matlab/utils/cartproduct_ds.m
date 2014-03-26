@@ -23,7 +23,7 @@ function P = cartproduct_ds(factors, factornames)
 %   - Cartesian product dataset from sequence of numeric arrays
 %
 %     >> cartproduct_ds({[1 2] [3 4] [5 6]}, {'A' 'B' 'C'})
-%     ans = 
+%     ans =
 %         A    B    C
 %         1    3    5
 %         1    3    6
@@ -37,16 +37,16 @@ function P = cartproduct_ds(factors, factornames)
 %   - Cartesian product dataset from type-heterogeneous sequence
 %
 %     >> cartproduct_ds({[1 2] {3 4} {'5' '6'}}, {'A' 'B' 'C'})
-%     ans = 
-%         A    B          C      
-%         1    [3]        '5'    
-%         1    [3]        '6'    
-%         1    [4]        '5'    
-%         1    [4]        '6'    
-%         2    [3]        '5'    
-%         2    [3]        '6'    
-%         2    [4]        '5'    
-%         2    [4]        '6'    
+%     ans =
+%         A    B          C
+%         1    [3]        '5'
+%         1    [3]        '6'
+%         1    [4]        '5'
+%         1    [4]        '6'
+%         2    [3]        '5'
+%         2    [3]        '6'
+%         2    [4]        '5'
+%         2    [4]        '6'
 %
 
 %%

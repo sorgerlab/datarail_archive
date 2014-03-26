@@ -20,7 +20,7 @@ function setup(testCase)
     permuted_idx = randperm(width(T));
     testCase.TestData.permuted_idx = permuted_idx;
 end
-    
+
 function test_0100(testCase)
     run_test_(testCase, 1:testCase.TestData.n);
 end

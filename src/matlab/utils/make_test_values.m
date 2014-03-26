@@ -18,7 +18,7 @@ function out = make_test_values( sz, varargin )
         out = arrayfun(@(i) contract_(out(i, :)), (1:size(out, 1)).');
     end
 end
-   
+
 function out = mtv_( sz, n )
     if n == 1
         out = (1:sz(1)).';
