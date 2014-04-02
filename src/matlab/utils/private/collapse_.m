@@ -14,7 +14,16 @@ function out = collapse_(tbl, ag, gv, iv)
 end
 
 function out = varfun_(fn, tbl, gv, iv)
-    out = varfun(fn, tbl, 'GroupingVariables', gv, 'InputVariables', iv);
+    fn = @(x) reshape(fn(x), 1, []);
+    args = {tbl 'GroupingVariables' gv 'InputVariables' iv};
+    try
+        out = varfun(fn, args{:});
+    catch e
+        if ~isequal(e.identifier, 'MATLAB:table:varfun:VertcatFailed')
+            rethrow(e); end
+        out = varfun(@(~) 0, args{:});
+        out.(width(out)) = varfun(fn, args{:}, 'OutputFormat', 'cell');
+    end
     out.GroupCount = [];
     out.Properties.VariableNames = [gv iv];
 end

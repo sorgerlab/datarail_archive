@@ -78,9 +78,21 @@ function test_collapse_1(testCase)
     t1 = collapse(t2, @(x) sum(x, 'native'));
     h1 = height(t1);
     h2 = height(t2);
-    verifyEqual(testCase, h2/2, h1);
+    verifyEqual(testCase, h1, h2/2);
     values = @(t) table2mat(t(:, tc.valvars));
-    verifyEqual(testCase, 2 * values(t0), values(t1));
+    verifyEqual(testCase, values(t1), 2 * values(t0));
+end
+
+function test_collapse_2(testCase)
+    tc = testCase.TestData.t234e;
+    t0 = tc.table;
+    t1 = t0(:, tc.keyvars);
+    for v = tc.valvars, t1.(v) = [t0.(v) t0.(v)]; end
+    t1.Properties.VariableNames = varnames(t0);
+    t2 = testCase.TestData.t234e2.table;
+
+    verifyEqual(testCase, collapse(t2, @horzcat), t1);
+    verifyEqual(testCase, collapse(t2, @vertcat), t1);
 end
 
 function test_sqz1(testCase)
@@ -377,9 +389,7 @@ function [vi, vn] = guess_valvars( tbl, varargin )
     end
 end
 
-%{
 %%
-
 function test_hslice(testCase)
     sh = [3 2 3 2 3];
     nda = reshape(1:prod(sh), sh);
@@ -490,4 +500,18 @@ function test_slice1_(testCase)
 
     verifyEqual(testCase, C, slice1_(A, idxs, true))
 end
-%}
+
+%%
+function test_isstr_(testCase)
+    verifyTrue(testCase, isstr_('xyz'));
+    r = ['x' 'y' 'z'];
+    verifyTrue(testCase, isstr_(r));
+
+    s = r.';
+    verifyFalse(testCase, isstr_(s));
+    verifyTrue(testCase, ischar(s));
+
+    verifyFalse(testCase, isstr_({'x' 'y' 'z'}));
+end
+
+%%
