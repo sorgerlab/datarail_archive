@@ -58,6 +58,58 @@ function test_cartproduct_ds(testCase)
     verifyEqual(testCase, got, exp);
 end
 
+function test_cartesian_product_0(testCase)
+    expected = cell(1, 3);
+    expected{1} = [1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 2; 2; 2; 2; 2; 2; 2; ...
+                   2; 2; 2; 2; 2];
+    expected{2} = [1; 1; 1; 1; 2; 2; 2; 2; 3; 3; 3; 3; 1; 1; 1; 1; 2; 2; 2; ...
+                   2; 3; 3; 3; 3];
+    expected{3} = [1; 2; 3; 4; 1; 2; 3; 4; 1; 2; 3; 4; 1; 2; 3; 4; 1; 2; 3; ...
+                   4; 1; 2; 3; 4];
+    actual = cartesian_product({(1:2).' (1:3).' (1:4).'});
+    verifyEqual(testCase, actual, expected);
+end
+
+function test_cartesian_product_1(testCase)
+    expected = cell(1, 3);
+    expected{1} = [1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 2; 2; 2; 2; 2; 2; 2; ...
+                   2; 2; 2; 2; 2];
+    expected{2} = [1; 1; 1; 1; 2; 2; 2; 2; 3; 3; 3; 3; 1; 1; 1; 1; 2; 2; 2; ...
+                   2; 3; 3; 3; 3];
+    expected{3} = [1; 2; 3; 4; 1; 2; 3; 4; 1; 2; 3; 4; 1; 2; 3; 4; 1; 2; 3; ...
+                   4; 1; 2; 3; 4];
+    actual = cartesian_product({1:2 1:3 1:4});
+    verifyEqual(testCase, actual, expected);
+end
+
+function test_cartesian_product_2(testCase)
+    expected = cell(1, 3);
+    expected{1} = [1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 2; 2; 2; 2; 2; 2; 2; ...
+                   2; 2; 2; 2; 2];
+    expected{2} = [1; 1; 1; 1; 2; 2; 2; 2; 3; 3; 3; 3; 1; 1; 1; 1; 2; 2; 2; ...
+                   2; 3; 3; 3; 3];
+    expected{2} = num2cell(expected{2});
+    expected{3} = [1; 2; 3; 4; 1; 2; 3; 4; 1; 2; 3; 4; 1; 2; 3; 4; 1; 2; 3; ...
+                   4; 1; 2; 3; 4];
+    actual = cartesian_product({(1:2).' {1 2 3} (1:4).'});
+    verifyEqual(testCase, actual, expected);
+end
+
+function test_cartesian_product_3(testCase)
+    expected = cell(1, 3);
+    expected{1} = ...
+        [1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; ...
+         2; 2; 2; 2; 2; 2; 2; 2; 2; 2; 2; 2];
+    expected{2} = ...
+        [1 4; 1 4; 1 4; 1 4; 2 5; 2 5; 2 5; 2 5; 3 6; 3 6; 3 6; 3 6; ...
+         1 4; 1 4; 1 4; 1 4; 2 5; 2 5; 2 5; 2 5; 3 6; 3 6; 3 6; 3 6];
+    expected{3} = ...
+        [1; 2; 3; 4; 1; 2; 3; 4; 1; 2; 3; 4; ...
+         1; 2; 3; 4; 1; 2; 3; 4; 1; 2; 3; 4];
+    actual = cartesian_product({1:2, reshape(1:6, 3, 2), 1:4});
+    verifyEqual(testCase, actual, expected);
+end
+
 function test_cartesian_product_table_0(testCase)
     t00 = cartesian_product_table({}, {});
     verifyEqual(testCase, size(t00), [1 0]);
@@ -65,6 +117,13 @@ function test_cartesian_product_table_0(testCase)
 end
 
 function test_cartesian_product_table_1(testCase)
+    vn = {'A' 'B' 'C'};
+    t = cartesian_product_table(repmat({{}}, size(vn)), vn);
+    verifyEqual(testCase, size(t), [0 3]);
+    verifyEqual(testCase, t.Properties.VariableNames, vn);
+end
+
+function test_cartesian_product(testCase)
     vn = {'A' 'B' 'C'};
     t = cartesian_product_table(repmat({{}}, size(vn)), vn);
     verifyEqual(testCase, size(t), [0 3]);

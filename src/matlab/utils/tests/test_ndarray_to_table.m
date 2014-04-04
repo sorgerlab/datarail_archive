@@ -65,3 +65,28 @@ function test_0800(testCase)
         verifyEqual(testCase, ndarray_to_table(A, L, outer), T);
     end
 end
+
+function test_0900(testcase)
+    for outer = [true false]
+        for expanded = [true false]
+            T = make_test_table([2 3 4], expanded);
+            outer = true;
+            [A, L] = table_to_ndarray(T, 'Outer', outer);
+            L{2}.D = categorical(1 + double(L{2}.B));
+
+            ud = T.Properties.UserData;
+            kvs = ud('keyvars');
+            vvs = ud('valvars');
+
+            expected = T;
+            kvs = [kvs(1, 1:2) 'D' kvs(3:end)];
+            expected.D = categorical(1 + double(expected.B));
+            expected = expected(:, [kvs vvs]);
+            expected.Properties.UserData('keyvars') = kvs;
+            actual = ndarray_to_table(A, L, outer);
+
+            verifyEqual(testcase, actual, expected);
+        end
+    end
+end
+

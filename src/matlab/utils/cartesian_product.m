@@ -17,23 +17,25 @@ function P = cartesian_product(factors, varargin)
     if nd == 0
         P = cell(1, 0);
     else
-        factors = cellmap(@(c) reshape(c, [numel(c) 1]), ...
-                          reshape(factors, [1 nd]));
+        factors = cellmap(@tocol_, reshape(factors, 1, []));
         if nd == 1
             content = factors;
         else
-            tmp = cellmap(@(c) 1:numel(c), factors);
+            % tmp = cellmap(@(c) 1:numel(c), factors);
+            tmp = cellmap(@(c) 1:length_(c), factors);
             if ~colex
                 tmp = fliplr(tmp);
             end
-            %tmp = fliplr(cellmap(@(c) 1:numel(c), factors));
             [idx{1:nd}] = ndgrid(tmp{:}); clear('tmp');
             if ~colex
                 idx = fliplr(idx);
             end
-            content = arraymap(@(i) factors{i}(idx{i}(:)), 1:nd);
+            content = arraymap(@(i) hslice(factors{i}, 1, idx{i}), 1:nd);
         end
         P = content;
     end
+end
 
+function f = tocol_(f)
+    if isrow(f), f = reshape(f, numel(f), 1); end
 end
