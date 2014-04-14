@@ -14,7 +14,20 @@ function out = collapse(tbl, aggrs, varargin)
 
     narginchk(2, 6);
     args = [{tbl} varargin];
-    [tbl, kns, vns, ~, ~] = ...
-        process_args__({'KeyVars' 'ValVars'}, args);
-    out = collapse_(tbl, aggrs, kns, vns);
+    if ~isempty(aggrs), args = [args {'Aggrs' aggrs}]; end
+    [tbl, kns, vns, aggrs, irreg, ~] = ...
+        process_args__({'KeyVars' 'ValVars' 'Aggrs' 'Irregular'}, args);
+    try 
+        out = collapse_(tbl, aggrs, kns, vns, irreg);
+    catch e
+        ds = dbstack('-completenames');
+        if isequal(ds(end).name, 'runtests') && ...
+           ~any(cellfun(@(s) ...
+               ~isempty(strfind(s, 'throwsExpectedException')), {ds.name}.'))
+            dbstack;
+            rethrow(e);
+        end
+        exc_id = regexprep(e.identifier, 'MATLAB:.*:', 'DR20:collapse:');
+        throw(MException(exc_id, e.message));
+    end
 end

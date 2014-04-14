@@ -19,5 +19,5 @@ function out = tostr_(seq, n)
         out = arraymap(@(i) num2str(seq{i, :}), 1:n);
     else
         out = arraymap(@(i) num2str(seq(i, :)), 1:n);
-    end    
+    end
 end

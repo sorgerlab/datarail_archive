@@ -1,4 +1,5 @@
-function out = select( fn, seq )
-    [out, sz, dn, idx] = filter_0_(fn, seq);
-    out = filter_1_(out, sz, dn, idx);
+function out = select( fn, seq, varargin )
+    [n, d] = length_(seq, varargin{:});
+    idx = arrayfun(@(i) fn(hslice(seq, d, i)), (1:n));
+    out = hslice(seq, d, find(idx));
 end
