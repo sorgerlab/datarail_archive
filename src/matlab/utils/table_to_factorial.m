@@ -12,7 +12,7 @@ function factorial_table = table_to_factorial(varargin)
 %         'ValVars'
 %         'Aggrs'
 
-    [tbl, kns, vns, aggrs, ~] = ...
+    [tbl, kns, vns, aggrs, ~, ~] = ...
         process_args__({'KeyVars' 'ValVars' 'Aggrs'}, varargin);
     factorial_table = table_to_factorial_(tbl, kns, vns, aggrs);
 end

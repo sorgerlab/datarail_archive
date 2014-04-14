@@ -9,18 +9,21 @@ function [ndarray, labels] = table_to_ndarray(varargin)
 %     you to specify optional parameter name/value pairs to control
 %     TABLE_TO_NDARRAY's behavior.  Parameters are:
 %
-%         'KeyVars' - Variables of TBL to use as key variables.  The
-%                     ordering of the variables in this parameter affects
-%                     the ordering of the dimensions of the resulting
-%                     NDARRAY.  Key variables may be specified as a
-%                     one-dimensional cell array containing variable names,
-%                     variable numbers, or combination thereof, or some
-%                     one-dimensional value (e.g. a numeric vector)
-%                     resolvable to such.  If, after resolving all the
-%                     specified variables, duplicates are detected, an
-%                     exception is raised.
+%         'KeyVars' - Variables of TBL to use as key variables.  Only
+%                     variables that correspond to 1-dimensional table
+%                     columns may be specified as key variables.  The
+%                     ordering of the variables in this parameter
+%                     affects the ordering of the dimensions of the
+%                     resulting NDARRAY.  Key variables may be
+%                     specified as a one-dimensional cell array
+%                     containing variable names, variable numbers, or
+%                     combination thereof, or some one-dimensional
+%                     value (e.g. a numeric vector) resolvable to such.
+%                     If, after resolving all the specified variables,
+%                     duplicates are detected, an exception is raised.
 %
-%                     DEFAULT: variables of TBL for which the ISCATEGORICAL
+%                     DEFAULT: variables of TBL that are not specified
+%                     as ValVarS (see below) and for which the ISCATEGORICAL
 %                     predicate returns TRUE (ordered according to their
 %                     original ordering among TBL's variables).
 %
@@ -49,7 +52,10 @@ function [ndarray, labels] = table_to_ndarray(varargin)
 %                     function handle is specified, it is used for all the
 %                     value variables.  If a cell array of function handles
 %                     is specified, it must contain one function handle for
-%                     each value variable.
+%                     each value variable.  The function(s) specified
+%                     should not be sensitive to the ordering of argument
+%                     values, and must return values for which ISROW
+%                     returns true.
 %
 %                     DEFAULT: (applicable only if every combination of
 %                     values of the KEYVARS is unique) the identity
@@ -67,7 +73,7 @@ function [ndarray, labels] = table_to_ndarray(varargin)
 %
 %                     DEFAULT: FALSE.
 
-    [tbl, kns, vns, aggrs, outer] = ...
+    [tbl, kns, vns, aggrs, ~, outer] = ...
         process_args__({'KeyVars' 'ValVars' 'Aggrs' 'Outer'}, varargin);
 
     ftbl = table_to_factorial_(tbl, kns, vns, aggrs);
@@ -124,4 +130,3 @@ end
 function out = tolabels_(lbls, name)
     out = table(lbls(:), 'VariableNames', {name});
 end
-

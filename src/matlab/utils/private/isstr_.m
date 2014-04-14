@@ -1,4 +1,4 @@
-function [varargout] = isstr_(varargin)
+function out = isstr_( x )
 %ISSTR_ return true iff argument is a "single string."
 %
 %    Examples:
@@ -23,7 +23,5 @@ function [varargout] = isstr_(varargin)
 %    ans =
 %         0
 %
-    % stub
-    tmp = num2cell(zeros(1, nargout));
-    [varargout{1:nargout}] = tmp{:};
+    out = ischar(x) && isrow(x);
 end

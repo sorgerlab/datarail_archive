@@ -11,31 +11,26 @@ function tbl = ndarray_to_table(ndarray, labels, varargin)
     narginchk(2, 3);
     outer = nargin > 2 && varargin{1};
 
-    if outer
-        labels = circshift(labels, [0 1]);
-    end
+    labels = cellmap(@(l) unique(l, 'rows', 'stable'), labels);
+
+    if outer, labels = circshift(labels, [0 1]); end
     vvs = labels{1};
     labels = labels(2:end);
 
     if ischar(vvs)
         vvs = {vvs};
     else
-        if istable(vvs)
-            vvs = cellstr(vvs.(1));
-        end
+        if istable(vvs), vvs = cellstr(vvs.(1)); end
         vvs = reshape(vvs, 1, []);
     end
 
-    kvs = cellmap(@varnames, labels);
-    levels = cellmap(@(t) t{:, :}, labels);
-
-    assert(isequal(cellmap(@(x) size(x, 2), kvs), ...
-                   cellmap(@(x) size(x, 2), levels)));
-
-    keys = cellmap(@expand_, cartesian_product(levels));
+    tidx = cartesian_product(cellmap(@(t) tocol(1:height(t)), labels));
+    keys = catc(2, arraymap(@(i) labels{i}(tidx{i}, :), 1:numel(labels)));
 
     n = ndims(ndarray);
-    check_dims_(n, outer, numel(vvs), numel(keys));
+
+    check_dims_(n, outer, numel(vvs), numel(labels));
+
     m = numel(ndarray);
 
     p = n:-1:1;
@@ -45,13 +40,8 @@ function tbl = ndarray_to_table(ndarray, labels, varargin)
     end
 
     values = num2cell(reshape(permute(ndarray, p), m, []), 1);
-    data = [cat(2, keys{:}) values];
-    tbl = make_table(data, tomaxdims(kvs), vvs);
-end
-
-function out = expand_(lvl)
-    n = size(lvl, 2);
-    out = arraymap(@(i) hslice(lvl, 2, i), 1:n);
+    data = cat(2, keys, table(values{:}));
+    tbl = make_table(data, keys.Properties.VariableNames, vvs);
 end
 
 function check_dims_(ndims_, outer, nvalvars, nkeys)
