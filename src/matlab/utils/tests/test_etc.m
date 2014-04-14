@@ -12,11 +12,11 @@ function teardownOnce(testCase)
 end
 
 function setup(testCase)
-    t234e = make_test_table_([2 3 4], true);
-    testCase.TestData.t234e = t234e;
-    t234e2 = t234e;
-    t234e2.table = vertcat(t234e2.table, t234e2.table);
-    testCase.TestData.t234e2 = t234e2;
+% $$$     t234e = make_test_table_([2 3 4], true);
+% $$$     testCase.TestData.t234e = t234e;
+% $$$     t234e2 = t234e;
+% $$$     t234e2.table = vertcat(t234e2.table, t234e2.table);
+% $$$     testCase.TestData.t234e2 = t234e2;
 end
 
 function tt = make_test_table_(sz, expanded)
@@ -130,30 +130,6 @@ function test_cartesian_product(testCase)
     verifyEqual(testCase, t.Properties.VariableNames, vn);
 end
 
-function test_collapse_1(testCase)
-    t0 = testCase.TestData.t234e.table;
-    tc = testCase.TestData.t234e2;
-    t2 = tc.table;
-    t1 = collapse(t2, @(x) sum(x, 'native'));
-    h1 = height(t1);
-    h2 = height(t2);
-    verifyEqual(testCase, h1, h2/2);
-    values = @(t) table2mat(t(:, tc.valvars));
-    verifyEqual(testCase, values(t1), 2 * values(t0));
-end
-
-function test_collapse_2(testCase)
-    tc = testCase.TestData.t234e;
-    t0 = tc.table;
-    t1 = t0(:, tc.keyvars);
-    for v = tc.valvars, t1.(v) = [t0.(v) t0.(v)]; end
-    t1.Properties.VariableNames = varnames(t0);
-    t2 = testCase.TestData.t234e2.table;
-
-    verifyEqual(testCase, collapse(t2, @horzcat), t1);
-    verifyEqual(testCase, collapse(t2, @vertcat), t1);
-end
-
 function test_sqz1(testCase)
     a0 = zeros([1 1 2 1 3 1 4]);
     sz0 = size(a0);
@@ -257,7 +233,8 @@ function test_fill_missing_keys_(testCase)
 
     ii = any(...
              cell2mat(...
-                      arrayfun(@(i) t.(kns{i}) == t.(kns{i+1}), ...
+                      arrayfun(@(i) ...
+                               double(t.(kns{i})) == double(t.(kns{i+1})), ...
                                1:numel(kns)-1, 'un', false) ...
                      ), ...
              2);
@@ -289,48 +266,6 @@ function test_fill_missing_keys_(testCase)
 end
 
 %%
-function test_collapse_(testCase)
-    t = make_test_table([2 3 4], true);
-    ud = t.Properties.UserData;
-    t.Properties.UserData = [];
-    kns = ud('keyvars');
-    vns = ud('valvars');
-
-    ii = any(...
-             cell2mat(...
-                      arrayfun(@(i) t.(kns{i}) == t.(kns{i+1}), ...
-                               1:numel(kns)-1, 'un', false) ...
-                     ), ...
-             2);
-    t0 = t( ii, :); assert(~isempty(t0));
-    t1 = vertcat(t0, t0, t0);
-
-    c0 = collapse(t1, @(x) sum(x, 'native'), 'KeyVars', kns);
-    verifyEqual(testCase, c0(:, kns), t0(:, kns));
-
-    c1 = collapse(t1, @(x) sum(x, 'native'), 'KeyVars', kns, ...
-                                             'ValVars', vns(end));
-    verifyEqual(testCase, c1(:, kns), t0(:, kns));
-    verifyEqual(testCase, c1.(vns{end}), ...
-                          cast(3 * t0.(vns{end}), ...
-                               class(c1.(vns{end}))));
-
-    c2 = collapse(t1, @(x) sum(x, 'native'), 'KeyVars', kns, ...
-                                             'ValVars', vns);
-    verifyEqual(testCase, c2(:, kns), t0(:, kns));
-    verifyEqual(testCase, ...
-                c2{:, vns}, ...
-                cast(3 * t0{:, vns}, class(c2{:, vns})));
-
-    c3 = collapse(t1, {@mean, @median}, 'KeyVars', kns, ...
-                                        'ValVars', vns(1, [2 3]));
-    verifyEqual(testCase, c3(:, kns), t0(:, kns));
-    verifyEqual(testCase, ...
-                c3{:, vns(1, [2 3])}, ...
-                cast(t0{:, vns(1, [2 3])}, class(c3{:, vns(1, [2 3])})));
-end
-
-%%
 function test_table_to_factorial_(testCase)
     t = make_test_table([2 3 4], true);
     ud = t.Properties.UserData;
@@ -340,7 +275,8 @@ function test_table_to_factorial_(testCase)
 
     ii = any(...
              cell2mat(...
-                      arrayfun(@(i) t.(kns{i}) == t.(kns{i+1}), ...
+                      arrayfun(@(i) ...
+                               double(t.(kns{i})) == double(t.(kns{i+1})), ...
                                1:numel(kns)-1, 'un', false) ...
                      ), ...
              2);
@@ -468,52 +404,6 @@ function test_hslice(testCase)
                               tnd(:, :, :, :, :, :, [1 1]));
         warning('off', 'hslice:alreadySlice');
     end
-end
-
-
-%%
-function test_tomaxdims(testCase)
-
-    iis = {1:1, 2:3, 4:6};
-    jjs = {1:2, 3:5, 6:9};
-    kks = {1:2, 3:5, 6:6};
-
-    sh = cellfun(@(c) max(cell2mat(c(end))), {iis, jjs, kks});
-
-    A = num2cell(reshape(1:prod(sh), sh));
-    %A = num2cell(dr.mkslab(sh, true, true));
-
-    B = cell(numel(iis), numel(jjs), numel(kks));
-
-    for i = 1:3
-        Si = hslice(A, 1, iis{i});
-        for j = 1:3
-            Sj = hslice(Si, 2, jjs{j});
-            for k = 1:3
-                B{i, j, k} = hslice(Sj, 3, kks{k});
-            end
-        end
-    end
-
-    verifyEqual(testCase, tomaxdims(B), A);
-
-    C = cell(numel(iis), 1);
-    for i = 1:3
-        Ci = cell(numel(jjs), 1);
-        Si = hslice(A, 1, iis{i});
-        for j = 1:3
-            Cij = cell(numel(kks), 1);
-            Sj = hslice(Si, 2, jjs{j});
-            for k = 1:3
-                Cij{k} = hslice(Sj, 3, kks{k});
-            end
-            Ci{j} = Cij;
-        end
-        C{i} = Ci;
-    end
-
-    verifyEqual(testCase, tomaxdims(C), A);
-
 end
 
 %%

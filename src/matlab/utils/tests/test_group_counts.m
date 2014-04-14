@@ -16,7 +16,7 @@ function setup(testCase)
     vars = T.Properties.VariableNames;
     testCase.TestData.vars = vars;
 
-    rng(0);
+    rng(0, 'twister');
     permuted_idx = randperm(width(T));
     testCase.TestData.permuted_idx = permuted_idx;
 end
@@ -49,10 +49,9 @@ end
 function run_test_(testCase, idx)
     td = testCase.TestData;
     T = td.T;
-    vars = td.vars;
-    T0 = collapse(T, {}, 'KeyVars', idx);
+    expected = collapse(T, {}, 'KeyVars', idx);
     sz = td.sz;
-    T0.counts = ones(height(T0), 1) * (height(T)/prod(sz(idx)));
-    verifyEqual(testCase, T0, group_counts(T, vars(1, idx)))
+    expected.counts = ones(height(expected), 1) * (height(T)/prod(sz(idx)));
+    actual = group_counts(T, td.vars(1, idx));
+    verifyEqual(testCase, actual, expected);
 end
-

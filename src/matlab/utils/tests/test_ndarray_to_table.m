@@ -67,12 +67,18 @@ function test_0800(testCase)
 end
 
 function test_0900(testcase)
+    function L = update_(L)
+        ith = @(i) L{i}.Properties.VariableNames{1};
+        idx = select(@(i) isequal(ith(i), 'B'), 1:numel(L));
+        L{idx}.D = categorical(1 + double(L{idx}.B));
+    end
+
     for outer = [true false]
         for expanded = [true false]
             T = make_test_table([2 3 4], expanded);
-            outer = true;
             [A, L] = table_to_ndarray(T, 'Outer', outer);
-            L{2}.D = categorical(1 + double(L{2}.B));
+
+            L = update_(L);
 
             ud = T.Properties.UserData;
             kvs = ud('keyvars');
@@ -89,4 +95,3 @@ function test_0900(testcase)
         end
     end
 end
-
