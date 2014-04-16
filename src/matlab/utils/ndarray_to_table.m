@@ -17,6 +17,9 @@ function tbl = ndarray_to_table(ndarray, labels, varargin)
     vvs = labels{1};
     labels = labels(2:end);
 
+    n = ndims(ndarray);
+    check_dims_(n, outer, getnvvs_(vvs), numel(labels));
+
     if ischar(vvs)
         vvs = {vvs};
     else
@@ -26,10 +29,6 @@ function tbl = ndarray_to_table(ndarray, labels, varargin)
 
     tidx = cartesian_product(cellmap(@(t) tocol(1:height(t)), labels));
     keys = catc(2, arraymap(@(i) labels{i}(tidx{i}, :), 1:numel(labels)));
-
-    n = ndims(ndarray);
-
-    check_dims_(n, outer, numel(vvs), numel(labels));
 
     m = numel(ndarray);
 
@@ -52,5 +51,12 @@ function check_dims_(ndims_, outer, nvalvars, nkeys)
     if ~(ndims_ == d + nkeys)
         error('DR20:ndarray_to_table:InconsistentDimensions', ...
               'Dimensions of ndarray not consistent with label dimensions');
+    end
+end
+
+function nvvs = getnvvs_(vvs)
+    if ischar(vvs), nvvs = 1;
+    elseif istable(vvs), nvvs = height(vvs);
+    else nvvs = length_(vvs);
     end
 end
