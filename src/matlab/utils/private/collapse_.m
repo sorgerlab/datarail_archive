@@ -86,15 +86,7 @@ function out = varfun_(fns, tbl, gvns, vvns, irreg)
     % value.
 
     ktbl = hashable_(tbl(:, gvidx));
-    %[~, glocs, group] = unique(ktbl, 'sorted');
     [~, glocs, group] = unique(ktbl, 'stable');
-
-    try
-        [glocs1, group1] = table2gidx_(height(tbl), in_data(:, gvidx), gvns);
-        assert(isequal(glocs, glocs1) && isequal(group, group1));
-    catch e
-        1;
-    end
 
     ngroups = numel(glocs);
     out_col = cell(ngroups, 1);
