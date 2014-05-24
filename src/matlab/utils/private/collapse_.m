@@ -74,7 +74,6 @@ end
 %-------------------------------------------------------------------------------
 function out = varfun_(fns, tbl, gvns, vvns, irreg)
     gvidx = dr.vidxs(tbl, gvns);
-    in_data = tabledata(tbl);
 
     nvvs = numel(vvns);
     out_data = cell(1, nvvs);
@@ -86,12 +85,36 @@ function out = varfun_(fns, tbl, gvns, vvns, irreg)
     % value.
 
     ktbl = hashable_(tbl(:, gvidx));
-    [~, glocs, group] = unique(ktbl, 'stable');
 
-    ngroups = numel(glocs);
+%     [~, origglocs, group] = unique(ktbl, 'stable');
+%     assert(issorted(origglocs));
+
+    [~, ~, group_id_col] = unique(ktbl, 'stable');
+    [sorted_group_id_col, sortperm] = sort(group_id_col);
+    grouped_tbl = tbl(sortperm, :);
+    [~, grouplocs, ~] = unique(sorted_group_id_col, 'stable');
+    assert(issorted(grouplocs));
+
+    nrows = height(ktbl);
+    assert(nrows == numel(group_id_col));
+    ngroups = numel(grouplocs);
+
+    ends = [grouplocs; nrows + 1];
+    assert(numel(ends) - 1 == ngroups);
+
     out_col = cell(ngroups, 1);
 
     vvidx = dr.vidxs(tbl, vvns);
+
+    in_data = tabledata(grouped_tbl);
+
+%     assert(isequal(tbl(origglocs, :), grouped_tbl(glocs, :)));
+%     orig_in_data = tabledata(tbl);
+%     for j = 1:size(in_data, 2)
+%         assert(isequal(in_data{1, j}(glocs, :), ...
+%                        orig_in_data{1, j}(origglocs, :)));
+%     end
+
     for j = 1:nvvs
         vvn = vvns{j};
         vvj = vvidx(j);
@@ -100,6 +123,15 @@ function out = varfun_(fns, tbl, gvns, vvns, irreg)
         fn = fns{j};
         fn_name = func2str(fn);
         on_err = @fn_failed;
+
+        nd = ndims(in_col);
+        if nd <= 2
+            % common special case
+            getarg_ = @(i) in_col(ends(i):(ends(i+1)-1), :);
+        else
+            template = repmat({':'}, nd);
+            getarg_ = @(i) hslice_(in_col, 1, ends(i):(ends(i+1)-1), template);
+        end
 
         for i = 1:ngroups
 
@@ -118,7 +150,7 @@ function out = varfun_(fns, tbl, gvns, vvns, irreg)
 % $$$
 % $$$     actual = collapse(t, @numel, 'KeyVars', {1});
 
-            arg = hslice(in_col, 1, find(group == i));
+            arg = getarg_(i);
             try out_col{i} = fn(arg);
             catch e
                 s = mk_err_struct_(e, fn_name, vvj, vvn, i);
@@ -140,12 +172,9 @@ function out = varfun_(fns, tbl, gvns, vvns, irreg)
 
     assert(nvvs == 0 || all(cellfun(@(x) 1 == size(x, 1), out_col)));
 
-    %grp_cts = histc(group, 1:ngroups);
     try
-        out = [tbl(glocs, gvidx) ...
-               table(out_data{:}, 'VariableNames', vvns) ...
-               % table(grp_cts, 'VariableNames', {'GroupCounts'}) ...
-              ];
+        out = [grouped_tbl(grouplocs, gvidx) ...
+               table(out_data{:}, 'VariableNames', vvns)];
     catch e
         e_id = e.identifier;
         if strcmp(e_id, 'MATLAB:table:parseArgs:WrongNumberArgs') || ...
@@ -154,8 +183,6 @@ function out = varfun_(fns, tbl, gvns, vvns, irreg)
         end
         rethrow(e);
     end
-
-    %out = out(unsorter_(unique(ktbl, 'stable')), :);
 
 end % function b = varfun_(fun, a, varargin)
 
@@ -256,3 +283,4 @@ function [gidx, gloc] = grp2idx(var, vname)
     end
     assert(~any(isnan(gidx(:))));
 end
+
