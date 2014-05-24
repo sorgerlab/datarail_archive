@@ -9,8 +9,6 @@ function out = hslice(ndarray, dim, ix)
                  'along dimension %d'], dim);
         out = ndarray;
     else
-        ixs = repmat({':'}, [1 max(nd, dim)]);
-        ixs{dim} = ix;
-        out = ndarray(ixs{:});
+        out = hslice_(ndarray, dim, ix, repmat({':'}, [1 max(nd, dim)]));
     end
 end
