@@ -123,7 +123,7 @@ function test_collapse_(testCase)
 
     c0 = collapse(t1, @(x) sum(x, 'native'), 'KeyVars', kns);
     verifyEqual(testCase, c0(:, kns), t0(:, kns));
-
+1;
     c1 = collapse(t1, @(x) sum(x, 'native'), 'KeyVars', kns, ...
                                              'ValVars', vns(end));
     verifyEqual(testCase, c1(:, kns), t0(:, kns));

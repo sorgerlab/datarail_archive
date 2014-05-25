@@ -78,35 +78,11 @@ function out = varfun_(fns, tbl, gvns, vvns, irreg)
     nvvs = numel(vvns);
     out_data = cell(1, nvvs);
 
-    % The preprocessing of key columns performed by the hashable_ helper
-    % function produces a table (KTBL) whose column types are among the few
-    % that MATLAB's UNIQUE function can handle; KTBL is used only for
-    % indexing and grouping; its contents are not included in the returned
-    % value.
+    [grouped_tbl, starts, ends] = group_rows_(tbl, gvns);
 
-    ktbl = hashable_(tbl(:, gvidx));
-
-%     [~, origglocs, group] = unique(ktbl, 'stable');
-%     assert(issorted(origglocs));
-
-    [~, ~, group_id_col] = unique(ktbl, 'stable');
-    [sorted_group_id_col, sortperm] = sort(group_id_col);
-    grouped_tbl = tbl(sortperm, :);
-    [~, grouplocs, ~] = unique(sorted_group_id_col, 'stable');
-    assert(issorted(grouplocs));
-
-    nrows = height(ktbl);
-    assert(nrows == numel(group_id_col));
-    ngroups = numel(grouplocs);
-
-    ends = [grouplocs; nrows + 1];
-    assert(numel(ends) - 1 == ngroups);
-
-    out_col = cell(ngroups, 1);
-
-    vvidx = dr.vidxs(tbl, vvns);
-
-    in_data = tabledata(grouped_tbl);
+    ngroups = numel(starts);
+    nrows = height(grouped_tbl);
+    assert(nrows == height(tbl));
 
 %     assert(isequal(tbl(origglocs, :), grouped_tbl(glocs, :)));
 %     orig_in_data = tabledata(tbl);
@@ -115,6 +91,10 @@ function out = varfun_(fns, tbl, gvns, vvns, irreg)
 %                        orig_in_data{1, j}(origglocs, :)));
 %     end
 
+    out_col = cell(ngroups, 1);
+    in_data = tabledata(grouped_tbl);
+
+    vvidx = dr.vidxs(grouped_tbl, vvns);
     for j = 1:nvvs
         vvn = vvns{j};
         vvj = vvidx(j);
@@ -127,10 +107,10 @@ function out = varfun_(fns, tbl, gvns, vvns, irreg)
         nd = ndims(in_col);
         if nd <= 2
             % common special case
-            getarg_ = @(i) in_col(ends(i):(ends(i+1)-1), :);
+            getarg_ = @(i) in_col(starts(i):ends(i), :);
         else
             template = repmat({':'}, nd);
-            getarg_ = @(i) hslice_(in_col, 1, ends(i):(ends(i+1)-1), template);
+            getarg_ = @(i) hslice_(in_col, 1, starts(i):ends(i), template);
         end
 
         for i = 1:ngroups
@@ -173,7 +153,7 @@ function out = varfun_(fns, tbl, gvns, vvns, irreg)
     assert(nvvs == 0 || all(cellfun(@(x) 1 == size(x, 1), out_col)));
 
     try
-        out = [grouped_tbl(grouplocs, gvidx) ...
+        out = [grouped_tbl(starts, gvidx) ...
                table(out_data{:}, 'VariableNames', vvns)];
     catch e
         e_id = e.identifier;
@@ -198,28 +178,6 @@ end
 function s = mk_err_struct_(exc, fname, vvidx, vvname, gidx)
     s = struct('identifier', exc.identifier, 'message', exc.message, ...
                'fname', fname, 'index', vvidx, 'name', vvname, 'group', gidx);
-end
-
-%-------------------------------------------------------------------------------
-function ktbl = hashable_(ktbl)
-    w = width(ktbl);
-    if w > 0 && height(ktbl) > 0
-        % in principle, one row would suffice to test compatibility with
-        % unique; the business with tworows below is just defensive
-        % programming: guarding against possible optimizations for the
-        % 1-row case in the downstream code.
-        tworows = ktbl([1; 1], :);
-        for i = 1:w
-            try
-                unique(tworows.(i));
-            catch e
-                if ~strcmp(e.identifier, 'MATLAB:UNIQUE:InputClass')
-                    rethrow(e);
-                end
-                ktbl.(i) = cellmap(@DataHash, ktbl.(i));
-            end
-        end
-    end
 end
 
 %-------------------------------------------------------------------------------
