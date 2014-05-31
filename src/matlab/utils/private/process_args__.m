@@ -132,7 +132,7 @@ function [varargout] = process_args__(tokeep, orig)
         throwAsCaller(exc);
     end
 
-    out = {tbl kns vns aggrs irregular outer};
+    out = {tbl kns vns aggrs irregular outer p};
     [varargout{1:nargout}] = out{1:nargout};
 end
 
