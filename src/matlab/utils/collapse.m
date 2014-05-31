@@ -34,7 +34,7 @@ function out = collapse(tbl, aggrs, varargin)
     if ~isempty(aggrs), args = [args {'Aggrs' aggrs}]; end
     [tbl, kns, vns, aggrs, irreg, ~] = ...
         process_args__({'KeyVars' 'ValVars' 'Aggrs' 'Irregular'}, args);
-    try 
+    try
         out = collapse_(tbl, aggrs, kns, vns, irreg);
     catch e
         ds = dbstack('-completenames');

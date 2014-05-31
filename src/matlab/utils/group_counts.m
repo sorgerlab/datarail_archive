@@ -14,7 +14,7 @@ function out = group_counts(tbl, varargin)
 
     narginchk(1, 2);
     if nargin > 1, params = {'KeyVars', varargin{1}}; else params = {}; end
-   
+
     [tbl, kvs, ~, ~, ~, ~] = process_args__({'KeyVars'}, [{tbl} params]);
 
     kis = dr.vidxs(tbl, kvs);
