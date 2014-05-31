@@ -1,4 +1,4 @@
-function tests = test_select
+function tests = test_length_
     tests = functiontests(localfunctions);
 end
 

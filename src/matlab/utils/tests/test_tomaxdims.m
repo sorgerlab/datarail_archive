@@ -1,4 +1,4 @@
-function tests = test_select
+function tests = test_tomaxdims
     tests = functiontests(localfunctions);
 end
 
