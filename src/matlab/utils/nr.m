@@ -14,10 +14,27 @@ function [] = nr_(seq)
 end
 
 function out = tostr_(seq, n)
+    bs = char(92); % backslash
+    sq = char(39); % single quote
+
+    function c = esc1_(c)
+        if c == bs || c == sq; c = [bs c]; end
+    end
+
+    function c = esc2_(c)
+        if c < 32 || c > 126; c = sprintf('%s%03o', bs, c); end
+    end
+
+    function out = esc_(s)
+       e = CStr2String(arraymap(@esc1_, num2str(s)));
+       out = CStr2String([{sq} arraymap(@esc2_, e) {sq}]);
+    end
+
     seq = reshape(seq, n, []);
+
     if iscell(seq)
-        out = arraymap(@(i) num2str(seq{i, :}), 1:n);
+        out = arraymap(@(i) esc_(seq{i, :}), 1:n);
     else
-        out = arraymap(@(i) num2str(seq(i, :)), 1:n);
+        out = arraymap(@(i) esc_(seq(i, :)), 1:n);
     end
 end
