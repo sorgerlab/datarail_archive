@@ -253,7 +253,10 @@ classdef dr
                 return
             end
             nn = dr.vns(tbl);
-            if iscolumn(vars)
+
+            if isstr_(vars)
+                vars = strsplit(vars);
+            elseif iscolumn(vars)
                 vars = reshape(vars, 1, []);
             else
                 assert(isrow(vars), 'second argument is not 1-dimensional');

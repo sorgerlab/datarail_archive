@@ -1,4 +1,11 @@
-function [] = nr_(seq)
+function [] = nr_(seq, varargin)
+    narginchk(1, 2);
+
+    noquote = nargin > 1;
+    if noquote && ~isequal(varargin{1}, 'noquote')
+        throw(MException('DR20:nr:badargs', 'invalid arguments'));
+    end
+
     if istable(seq)
         n = height(seq);
         seq.Properties.RowNames = arraymap(@num2str, 1:n);
@@ -6,14 +13,14 @@ function [] = nr_(seq)
     else
         n = length_(seq);
         fmt = sprintf('%%%dd\t%%s', floor(log10(n)) + 1);
-        seq = tostr_(seq, n);
+        seq = tostr_(seq, n, noquote);
         lines = arraymap(@(i) sprintf(fmt, i, seq{i}), 1:n);
         todisp = strjoin(lines, '\n');
     end
     disp(todisp);
 end
 
-function out = tostr_(seq, n)
+function out = tostr_(seq, n, noquote)
     bs = char(92); % backslash
     sq = char(39); % single quote
 
@@ -31,10 +38,15 @@ function out = tostr_(seq, n)
     end
 
     seq = reshape(seq, n, []);
+    if noquote
+        tostr__ = @num2str;
+    else
+        tostr__ = @esc_;
+    end
 
     if iscell(seq)
-        out = arraymap(@(i) esc_(seq{i, :}), 1:n);
+        out = arraymap(@(i) tostr__(seq{i, :}), 1:n);
     else
-        out = arraymap(@(i) esc_(seq(i, :)), 1:n);
+        out = arraymap(@(i) tostr__(seq(i, :)), 1:n);
     end
 end
