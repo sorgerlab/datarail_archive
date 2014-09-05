@@ -235,11 +235,11 @@ function SKIP_____test_collapse_2d_cols(testCase)
 end
 end
 
-
-%--------------------------------------------------------------------------------
-%--------------------------------------------function test_
+%------------------------------------------------------------------------------
 
 function out = maybe_vertcat_(c)
+    % vertically concatenate the items in c whenever their dimensions
+    % allow it; otherwise, return c unchanged
     try
         out = vertcat(c{:});
     catch e
