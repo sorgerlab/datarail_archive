@@ -252,7 +252,7 @@ classdef dr
                 ii = [];
                 return
             end
-            nn = dr.vns(tbl);
+            nn = varnames(tbl);
 
             if isstr_(vars)
                 vars = strsplit(vars);
