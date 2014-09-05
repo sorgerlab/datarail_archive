@@ -17,9 +17,3 @@ function tbl = make_table(data, keyvars, valvars)
     userdata = make_hash({{'keyvars', keyvars}, {'valvars', valvars}});
     tbl.Properties.UserData = userdata;
 end
-
-% function TBL = make_table( vars, data, vspec, varargin )
-% %MAKE_TABLE make a new table object.
-% %   ...
-%     narginchk(3, 4);
-% end
