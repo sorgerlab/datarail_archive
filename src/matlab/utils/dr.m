@@ -286,7 +286,8 @@ classdef dr
             nvs = numel(nn);
             aob = ii(ii < 1 | nvs < ii);
             if numel(aob) > 0
-              error('one or more out-of-bound variable indices found: %s', ...
+              error('DR20:badsubscript', ...
+                    'one or more out-of-bound variable indices found: %s', ...
                     strjoin(cellmap(@int2str, num2cell(unique(aob, 'stable')))));
             end
 
@@ -485,7 +486,8 @@ classdef dr
 
         function unrecognized_variables_(unk)
             if numel(unk) > 0
-                error('unrecognized variable(s): %s', ...
+                error('DR20:UnrecognizedTableVariable', ...
+                      'unrecognized variable(s): %s', ...
                       strjoin(unique(unk, 'stable'), ', '));
             end
         end
