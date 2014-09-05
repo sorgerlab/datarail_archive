@@ -1,5 +1,6 @@
 function varargout = table_props_(tbl, prop, varargin)
     narginchk(2, 3);
+    prop = maybe_map_propname_(tbl, prop);
     if nargin > 2
         if isstr_(varargin{1})
             tbl.Properties.(prop) = strsplit(varargin{1});
