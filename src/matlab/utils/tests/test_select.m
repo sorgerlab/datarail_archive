@@ -138,6 +138,21 @@ function test_select_from_1dcell(testCase)
     verifyEqual(testCase, actual, expected);
 end
 
+function test_select_from_1dcell_1(testCase)
+    function yn = criterion(s)
+        xcalled = xcalled + 1;
+        yn = isnumeric(s) && numel(s) == 1 && mod(s, 2) == 1;
+    end
+
+    arg = {1 2 3};
+    xcalled  = 0;
+    actual   = selectc(@criterion, arg);
+    expected = {1 3};
+
+    verifyEqual(testCase, xcalled, numel(arg));
+    verifyEqual(testCase, actual, expected);
+end
+
 function test_select_from_ndcell(testCase)
     h = 3; w = 4; d = 5;
 
