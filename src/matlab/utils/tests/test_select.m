@@ -11,6 +11,8 @@ function teardownOnce(testCase)
     cd(testCase.TestData.origPath);
 end
 
+% -----------------------------------------------------------------------------
+
 function test_select_from_row_of_doubles(testCase)
     seq = 0:2;
     expected = 1:2;
@@ -89,32 +91,87 @@ end
 function test_select_from_ndarray(testCase)
     h = 3; w = 4; d = 5;
 
-    function box = mkbox_(ix)
-        mkslab_ = @(i) i * ones(1, w, d, 'uint8');
-        h_ = numel(ix);
-        box = reshape(catc(1, arraymap(mkslab_, ix)), 1, 1, h_, w, d);
-    end
-    criterion = @(s) 1 == mod(max(s(:)), 2);
-    seq0 = 1:h;
+    box_0 = reshape(uint8([1 2 3    1 2 3    1 2 3    1 2 3   ...
+                           1 2 3    1 2 3    1 2 3    1 2 3   ...
+                           1 2 3    1 2 3    1 2 3    1 2 3   ...
+                           1 2 3    1 2 3    1 2 3    1 2 3   ...
+                           1 2 3    1 2 3    1 2 3    1 2 3]), ...
+                    1, 1, h, w, d);
 
-    expected = mkbox_(select(criterion, seq0));
-    actual =   select(criterion, mkbox_(seq0));
-    verifyEqual(testCase, actual, expected)
+    % the criterion function below should be true iff s is an array uint8s
+    % with shape [1 1 1 w d], with uniform content some odd integer u
+    function yn = criterion(s)
+        xcalled = xcalled + 1;
+        u = unique(s);
+        yn = isa(s, 'uint8') && numel(u) == 1 && ...
+             mod(u, 2) == 1 && isequal(size(s), [1 1 1 w d]);
+    end
+
+    box_1 = reshape(uint8([1   3    1   3    1   3    1   3   ...
+                           1   3    1   3    1   3    1   3   ...
+                           1   3    1   3    1   3    1   3   ...
+                           1   3    1   3    1   3    1   3   ...
+                           1   3    1   3    1   3    1   3]), ...
+                    1, 1, h - 1, w, d);
+
+    expected = box_1;
+
+    xcalled  = 0;
+    actual   = select(@criterion, box_0);
+
+    verifyEqual(testCase, xcalled, h);
+    verifyEqual(testCase, actual, expected);
+end
+
+function test_select_from_1dcell(testCase)
+    function yn = criterion(s)
+        xcalled = xcalled + 1;
+        yn = iscell(s) && numel(s) == 1 && mod(s{1}, 2) == 1;
+    end
+
+    arg = {1 2 3};
+    xcalled  = 0;
+    actual   = select(@criterion, arg);
+    expected = {1 3};
+
+    verifyEqual(testCase, xcalled, numel(arg));
+    verifyEqual(testCase, actual, expected);
 end
 
 function test_select_from_ndcell(testCase)
     h = 3; w = 4; d = 5;
 
-    function box = mkbox_(ix)
-        mkslab_ = @(i) i * ones(1, w, d, 'uint8');
-        h_ = numel(ix);
-        tmp = reshape(catc(1, cellmap(mkslab_, ix)), 1, 1, h_, w, d);
-        box = num2cell(tmp);
-    end
-    criterion = @(s) 1 == mod(max(catc(1, s(:))), 2);
-    seq0 = num2cell(1:h);
+    box_0 = reshape({1 2 3    1 2 3    1 2 3    1 2 3   ...
+                     1 2 3    1 2 3    1 2 3    1 2 3   ...
+                     1 2 3    1 2 3    1 2 3    1 2 3   ...
+                     1 2 3    1 2 3    1 2 3    1 2 3   ...
+                     1 2 3    1 2 3    1 2 3    1 2 3}, ...
+                    1, 1, h, w, d);
 
-    expected = mkbox_(select(criterion, seq0));
-    actual =   select(criterion, mkbox_(seq0));
-    verifyEqual(testCase, actual, expected)
+    % the criterion function below should be true iff s is a cellarray of
+    % numbers with shape [1 1 1 w d], with uniform content some odd
+    % integer u
+    function yn = criterion(s)
+        xcalled = xcalled + 1;
+        yn = false;
+        if ~isequal(size(s), [1 1 1 w d]); return; end
+        if ~iscell(s); return; end
+        u = unique(cell2mat(s));
+        yn = numel(u) == 1 && mod(u, 2) == 1;
+    end
+
+    box_1 = reshape({1   3    1   3    1   3    1   3   ...
+                     1   3    1   3    1   3    1   3   ...
+                     1   3    1   3    1   3    1   3   ...
+                     1   3    1   3    1   3    1   3   ...
+                     1   3    1   3    1   3    1   3}, ...
+                    1, 1, h - 1, w, d);
+
+    expected = box_1;
+
+    xcalled  = 0;
+    actual   = select(@criterion, box_0);
+
+    verifyEqual(testCase, xcalled, h);
+    verifyEqual(testCase, actual, expected);
 end
