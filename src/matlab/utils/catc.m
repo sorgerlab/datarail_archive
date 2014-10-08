@@ -1,4 +1,7 @@
 function out = catc(dim, cellarray)
+%CATC Concatenate cell arrays.
+%   B = CATC(DIM, CELLARRAY) is equivalent to B = CAT(DIM, CELLARRAY{:}).
+
     if iscell(cellarray)
         out = cat(dim, cellarray{:});
     elseif isscalar_(cellarray)
