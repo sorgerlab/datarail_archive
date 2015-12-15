@@ -2,7 +2,7 @@ function out = nth(ndarray, n, dims)
 
 %NTH gets the N-th k-dimensional subarray of NDARRAY, whose k
 %   dimensions are given in DIMS
-%   
+%
 % [ Description ]
 %   - out = nth(NDARRAY, N, DIMS)
 %
@@ -29,7 +29,7 @@ function out = nth(ndarray, n, dims)
 nd = ndims(ndarray);
 
 if iscell(dims)
-    dims = unique(cell2mat(dims(:))', 'stable');
+    dims = unique(cell2mat(dims(:)).', 'stable');
     if max(dims) > nd || min(dims) < 1
         error('dim specs are out-of-range');
     end

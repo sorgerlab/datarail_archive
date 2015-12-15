@@ -10,55 +10,66 @@ function P = cartproduct_ds(factors, factornames)
 %   - P:        the cartesian product in form of cell array of tuples
 %
 % [ Description ]
-%   - P = cartproduct(C1, C2, ...) computes the cartesian product of 
-%     C1, C2, ..., which are expressed as cell arrays.
+%   - P = cartproduct_ds({C1, C2, ... }, FACTORNAMES) computes the dataset
+%     corresponding to th cartesian product of C1, C2, ... .  If C1,
+%     C2, ... are cell arrays (for example) having n1, n2, ...
+%     elements, respectively, then P will be a dataset with
+%     n1 x n2 x ... rows, such that
 %
-%     Suppose C1, C2, ... respectively has n1, n2, ... elements. Then
-%     P is an n1 x n2 x ... cell array of tuples, such that
 %        $ P{i1, i2, ...} = {C1{i1}, C2{i2}, ...} $
 %
+%     ...and having variables named by FACTORNAMES.
 % [ Examples ]
-%   - Compute Cartesian product of cell arrays
-%     \{
-%        cartproduct({1, 2}, {'a', 'b', 'c'})
-%        => { {[1], 'a'}, {[1], 'b'}, {[1], 'c'}; 
-%             {[2], 'a'}, {[2], 'b'}, {[2], 'c'} }
-%     \}
+%   - Cartesian product dataset from sequence of numeric arrays
 %
-%   - Compute Cartesian product of multiple sets
-%     \{
-%         cartproduct({100, 200}, {10, 20, 30}, {1, 2})            
-%     \}
+%     >> cartproduct_ds({[1 2] [3 4] [5 6]}, {'A' 'B' 'C'})
+%     ans =
+%         A    B    C
+%         1    3    5
+%         1    3    6
+%         1    4    5
+%         1    4    6
+%         2    3    5
+%         2    3    6
+%         2    4    5
+%         2    4    6
 %
-% [ History ]
-%   - Created by Dahua Lin, on Jun 27, 2007
+%   - Cartesian product dataset from type-heterogeneous sequence
+%
+%     >> cartproduct_ds({[1 2] {3 4} {'5' '6'}}, {'A' 'B' 'C'})
+%     ans =
+%         A    B          C
+%         1    [3]        '5'
+%         1    [3]        '6'
+%         1    [4]        '5'
+%         1    [4]        '6'
+%         2    [3]        '5'
+%         2    [3]        '6'
+%         2    [4]        '5'
+%         2    [4]        '6'
 %
 
-%% parse and verify input arguments
-
+%%
 narginchk(2, 2);
 
-%% cellfun(@(c) typecheck(c, 'the set must be a cell array', 'cell'), factors);
-
-%% main
-
-if ~iscell(factornames)
-    factornames = {factornames};
+if ~iscell(factors) || ~iscell(factornames)
+    error('first and/or second argument is not a cell array');
 end
 
-if numel(factors) ~= numel(factornames)
-    error('number of factors and number of factornames must match');
+nd = numel(factors);
+
+if numel(factornames) ~= nd
+    error('numbers of factors and of factornames do not match');
 end
 
-u = {'UniformOutput', false};  % pardon my french...
-n = length(factors);
-
-if n == 1
-    content = factors;
+if nd == 1
+    args = {[{reshape(factors{1}, [], 1)} factornames]};
 else
-    tmp = fliplr(cellfun(@(c) 1:numel(c), factors, u{:}));
-    [idx{1:n}] = ndgrid(tmp{:}); clear('tmp');
+    tmp = fliplr(cellmap(@(c) 1:numel(c), factors));
+    [idx{1:nd}] = ndgrid(tmp{:}); clear('tmp');
     idx = fliplr(idx);
-    content = arrayfun(@(i) factors{i}(idx{i}(:)), 1:n, u{:})
+    args = arraymap(@(i) {(factors{i}(idx{i}(:)).') ...
+                          factornames{i}}, 1:nd);
 end
-P = dataset([{cat(1, content{:}).'}, factornames]);
+P = dataset(args{:});
+

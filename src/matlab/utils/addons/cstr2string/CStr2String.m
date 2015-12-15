@@ -62,13 +62,13 @@ if nArg == 1
       String(index1:index2) = CStr{iC};
       index1 = index2 + 1;
    end
-   
+
    % CAT would be faster here - so better use the MEX!
    % String = cat(2, CStr{:});
 elseif nArg == 2
    Sep    = strrep(Sep, '\', '\\');
    String = sprintf(['%s', Sep], CStr{:});
-   
+
 elseif nArg == 3
    Sep    = strrep(Sep, '\', '\\');
    String = sprintf(['%s', Sep], CStr{:});
@@ -79,7 +79,7 @@ elseif nArg == 3
    elseif any(Trail)
       String = String(1:length(String) - length(Sep));
    end
-   
+
 else
    error(['JSimon:', mfilename, ':BadNInput'], '1 to 3 inputs allowed.');
 end

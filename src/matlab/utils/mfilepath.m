@@ -1,16 +1,11 @@
 function out = mfilepath(varargin)
-nvargs = length(varargin);
+    narginchk(0, 1);
+    if nargin == 0
+      offset = 0;
+    else
+      offset = varargin{1};
+    end
 
-if nvargs > 1
-  error('DR20:mfilepath:TooManyArguments', ...
-        'requires at most 1 arguments');
+    tmp = dbstack(1 + offset, '-completenames');
+    out = tmp(1).file;
 end
-
-if nvargs == 0
-  offset = 0
-else
-  offset = varargin{1};
-end
-
-tmp = dbstack('-completenames');
-out = tmp(1 + offset).file;
