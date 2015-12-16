@@ -1,4 +1,4 @@
-cellline	Cellcount	location[column]	location[plate]	location[row]	SeedingNumber	Untrt	location[well]	drug	drug[HMSLid]	durg[conc]=uM	readout[time]=h	pert_type	Date
+cellline	Cellcount	location[column]	location[plate]	location[row]	SeedingNumber	Untrt	location[well]	drug	drug[HMSLid]	drug[conc]=uM	readout[time]=h	pert_type	Date
 BT20	2781	2	0	3	5000	1	C02	-	-	0	0	ctl_vehicle	20140523_Bati
 BT20	2733	2	0	4	5000	1	D02	-	-	0	0	ctl_vehicle	20140523_Bati
 BT20	1210	2	0	5	2500	1	E02	-	-	0	0	ctl_vehicle	20140523_Bati
