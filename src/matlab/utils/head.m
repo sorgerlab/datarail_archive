@@ -1,4 +1,5 @@
 function out = head(seq, varargin)
+% out = head(seq, varargin)
     narginchk(1, 2);
     if nargin > 1
         n = varargin{1};
