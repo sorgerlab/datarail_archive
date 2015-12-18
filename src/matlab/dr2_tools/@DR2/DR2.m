@@ -1,4 +1,4 @@
-classdef DR2 
+classdef DR2
     
     properties
         
@@ -10,24 +10,23 @@ classdef DR2
         % table is up to date with m_data and Dimensions
         updatedTable = false;
         % MD matrix is up to date with t_data and Dimensions
-        % updatedMDarray = false;
+        updatedMDarray = false;
         
-        % data stored as a table 
+        % data stored as a table
         t_data = table();
         % data stored as a multi-dimensional matix
-        % m_data = NaN(0);
+        m_data = NaN(0);
         
         
-        % Dimensions 
+        % Dimensions
         %   some dimensions can have multiple names sharing the same prefix
         %   (like DrugName and DrugName[HMSLid]), but all levels of the
         %   paired dimensions will have a one-to-one mapping.
-        DimNames = {};
-        DimLevels = {}; % stored as tables of categorical of numeric values
+        Dimensions = {}; % stored as tables of categorical of numeric values
         
     end
     
-   
+    
     
     methods
         function obj = DR2(data, keys, varargin)
@@ -43,56 +42,49 @@ classdef DR2
         end
         
         function obj = sub(obj, varargin)
-            % DR2out = DR2in.sub('varname', 'condition', [ ... 
+            % DR2out = DR2in.sub('varname', 'condition', [ ...
             %           'logical', 'varname', 'condition'])
             %   varargin are pairs of keys and conditions (either as
             %   symbolic functions or strings. multiple pairs should be
-            %   separated by logical operator ('or', 'and', 'or not', 
+            %   separated by logical operator ('or', 'and', 'or not',
             %   'and not', 'xor'). Operators are applied from right to left
-            %   e.g.: 
+            %   e.g.:
             %   subDR2(DR2in, ...
             %       'cellline', @(x) ismember(x, {'BT20','MCF10A'}), ...
             %       'and', 'DrugName', '=''Lapatinib''', ...
-            %   
+            %
             assert(mod(nargin,3)==0)
-            Nconditions = nargin/3;
             Variables = varargin(1:3:end);
             Conditions = varargin(2:3:end);
-            Operators = [varargin(3:3:end) {'and'}];
+            Operators = cellfun_(@lower, [varargin(3:3:end) {'and'}]);
             
-            % operate on the table type of data
-            % starts from the last condition 
-            idx = true(height(obj.t_data),1);
-            
-            for i=Nconditions:-1:1
-                % evaluate the conditions
-                if ishandle(Conditions{i})
-                    idx2 = Conditions{i}(obj.t_data.(Variables{i}));
-                else
-                    eval(Conditions{i}(3:end))
-                    eval(['idx2 = obj.t_data.(Variables{i})' Conditions{i} ';'])
-                end
-                % applying the conditions
-                nIdx = strfind(Operators{i}, 'not');
-                if isempty(nIdx)
-                    eval(['idx = ' Operators{i} '(idx, idx2);'])
-                else
-                    eval(['idx = ' Operators{i}(1:nIdx-1) '(not(idx), idx2);'])
-                end
-                    
+            if obj.updatedTable
+                % operate on the table
+                idx = filterOnTable(obj.t_data, Variables, Conditions, Operators);
+                obj = constructTwoArgument(obj, obj.t_data(idx,:), [obj.DimNames{:}]);
+                
+            elseif obj.updatedMDarray
+                % operate on the matrix
+                idx = filterOnLevels(obj.Dimensions, Variables, Conditions, Operators);
+                newMD = obj.m_data(idx{:});
+                newDimensions = cellfun_(@(x,y) x(y,:), obj.Dimensions, idx);
+                % push the dimensions with only have one level at the end.
+                % These are removed from the matrix, but kept in the levels
+                obj = constructTwoArgument(obj, squeeze(newMD), ...
+                    newDimensions([find(cellfun(@height,newDimensions)~=1) ...
+                    find(cellfun(@height,newDimensions)==1)]));
+                
             end
-            
-            obj = constructTwoArgument(obj, obj.t_data(idx,:), [obj.DimNames{:}]);
             
         end
         
         
-%         function obj = createMDarrayFromTable(obj)
-%             
-%             obj.m_data = table_to_ndarray(obj.t_data, 'keyvars', ...
-%                 [cellfun_(@(x) x{1}, obj.DimNames)]);
-%             
-%         end
+        %         function obj = createMDarrayFromTable(obj)
+        %
+        %             obj.m_data = table_to_ndarray(obj.t_data, 'keyvars', ...
+        %                 [cellfun_(@(x) x{1}, obj.DimNames)]);
+        %
+        %         end
         
     end
     
@@ -105,19 +97,18 @@ classdef DR2
             if istable(data)
                 % input is a table and its keys
                 
-                [obj.DimNames, obj.DimLevels] = ExtractMatchedKeys(data, keys);
+                obj.Dimensions = ExtractMatchedKeys(data, keys);
                 obj.t_data = data;
                 obj.updatedTable = true;
                 
             elseif isnumeric(data)
                 % input is a matrix with the keys and levels as table
+                assert(all(cellfun(@istable,keys)))
+                % accept some extra dimensions only if they have one level
+                assert(all(size(data) == cellfun(@height,keys(1:ndims(data)))))
+                assert(all(cellfun(@height,keys((ndims(data)+1):end))==1))
                 
-                %%%%% need to perform some checks on the consistency of inputs
-                %%%%%     ---> matching dimensions
-                %%%%%     ---> MH 15/12/15
-                obj.DimLevels = keys;
-                obj.DimNames = cellfun_(@(x) ExtractKeyPrefix(varnames(x)), ...
-                    keys);
+                obj.Dimensions = cellfun_(@TableToCategorical, keys);
                 obj.m_data = data;
                 obj.updatedMDarray = true;
             else
@@ -126,6 +117,9 @@ classdef DR2
             
         end
         
+        function dimNames = get_dimNames(obj)
+            dimNames = cellfun_(@varnames, obj.Dimensions);
+        end
     end
     
 end
