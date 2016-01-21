@@ -1,28 +1,35 @@
 classdef DR2
     
-    properties
+    properties (Access = public)
+        comment = '';
+    end
+        
+    properties(GetAccess = public, SetAccess = private)
         
         % data values
         %--------------
-        % by the default the data is stored as a long table
-        %       alternative is a MD array
+        % the data is stored as a long table or a MD array
+        %   currently there is no conversion between formats MH 16/1/20
         
-        % table is up to date with m_data and Dimensions
-        updatedTable = false;
-        % MD matrix is up to date with t_data and Dimensions
-        updatedMDarray = false;
+        Properties = struct('isTable', false, ... % data is in table format
+            'isMDarray', false, ... % data is in matrix format
+            'Dimensions', {{}}, ... % stored as tables of categorical of numeric values
+            ... % Dimensions
+            ...%   some dimensions can have multiple names sharing the same prefix
+            ...%   (like DrugName and DrugName[HMSLid]), but all levels of the
+            ...%   paired dimensions will have a one-to-one mapping.
+            'Operations', '');
         
-        % data stored as a table
-        t_data = table();
-        % data stored as a multi-dimensional matix
-        m_data = NaN(0);
+        % data stored as a table or multi-dimensional matix
+        data = [];
         
-        
-        % Dimensions
-        %   some dimensions can have multiple names sharing the same prefix
-        %   (like DrugName and DrugName[HMSLid]), but all levels of the
-        %   paired dimensions will have a one-to-one mapping.
-        Dimensions = {}; % stored as tables of categorical of numeric values
+        % all levels of all dimensions in a scructure
+        %%%%% ideally should be directly accessible from the class but new
+        %%%%% properties cannot be assigned dynamically. maybe check what
+        %%%%% can be done with dynamicproperty: 
+        %%%%% http://www.mathworks.com/help/matlab/ref/meta.dynamicproperty.html
+        %%%%% MH 16/1/20
+        lvls = struct();
         
     end
     
@@ -31,11 +38,12 @@ classdef DR2
     methods
         function obj = DR2(data, keys, varargin)
             % obj = DR2(data, keys, varargin)
+            %   constructor
             switch nargin
                 case 0
                     return
                 case 2
-                    obj = constructTwoArgument(obj, data, keys);
+                    obj = constructTwoArgument_(obj, data, keys);
                 otherwise
                     error('Expecting two arguments: (table or data), keys')
             end
@@ -58,24 +66,30 @@ classdef DR2
             Conditions = varargin(2:3:end);
             Operators = cellfun_(@lower, [varargin(3:3:end) {'and'}]);
             
-            if obj.updatedTable
+            if obj.Properties.isTable
                 % operate on the table
-                idx = filterOnTable(obj.t_data, Variables, Conditions, Operators);
-                obj = constructTwoArgument(obj, obj.t_data(idx,:), [obj.DimNames{:}]);
+                idx = filterOnTable(obj.data, Variables, Conditions, Operators);
+                obj = constructTwoArgument_(obj, obj.data(idx,:), [obj.DimNames{:}]);
                 
-            elseif obj.updatedMDarray
+            elseif obj.Properties.isMDarray
                 % operate on the matrix
-                idx = filterOnLevels(obj.Dimensions, Variables, Conditions, Operators);
-                newMD = obj.m_data(idx{:});
-                newDimensions = cellfun_(@(x,y) x(y,:), obj.Dimensions, idx);
+                idx = filterOnLevels(obj.Properties.Dimensions, Variables, Conditions, Operators);
+                newMD = obj.data(idx{:});
+                newDimensions = cellfun_(@(x,y) x(y,:), obj.Properties.Dimensions, idx);
                 % push the dimensions with only have one level at the end.
                 % These are removed from the matrix, but kept in the levels
-                obj = constructTwoArgument(obj, squeeze(newMD), ...
+                obj = constructTwoArgument_(obj, squeeze(newMD), ...
                     newDimensions([find(cellfun(@height,newDimensions)~=1) ...
                     find(cellfun(@height,newDimensions)==1)]));
                 
             end
+            varstr = cellfun_(@(x) evalc('disp(x)'), varargin);
+            varstr = cellfun_(@(x) x(x>32), varstr);
             
+            operation = strjoin(varstr,' ');
+            obj.comment = [obj.comment sprintf('\nsub: ') operation];
+            obj.Properties.Operations = [obj.Properties.Operations ...
+                sprintf('\nsub: ') operation];
         end
         
         
@@ -86,20 +100,46 @@ classdef DR2
         %
         %         end
         
+        
+        function [dimNames, dimLevels] = get_dimNames(obj)
+            dims = cellfun_(@varnames, obj.Properties.Dimensions);
+            dimNames = cell(length(dims),1);
+            dimLevels = dimNames;
+            for i=1:length(dims)
+                dimNames((1:length(dims{i})) + sum(cellfun(@length, dims(1:(i-1))))) = ...
+                    dims{i};
+                for j=1:length(dims{i})
+                    dimLevels{j + sum(cellfun(@length, dims(1:(i-1))))} = ...
+                        obj.Properties.Dimensions{i}.(j);
+                end
+                
+            end
+        end
+        
+        function obj = assignLevels(obj)
+            [dimNames, dimLevels] = get_dimNames(obj);
+            
+            obj.lvls = struct();
+            
+            % add the dimensions as new fields
+            for i=1:length(dimNames)
+                obj.lvls.(dimNames{i}) = dimLevels{i};
+            end
+            
+        end
+        
     end
-    
-    
     
     methods(Access = private)
         
-        function obj = constructTwoArgument(obj, data, keys)
+        function obj = constructTwoArgument_(obj, data, keys)
             
             if istable(data)
                 % input is a table and its keys
                 
-                obj.Dimensions = ExtractMatchedKeys(data, keys);
-                obj.t_data = data;
-                obj.updatedTable = true;
+                obj.Properties.Dimensions = ExtractMatchedKeys(data, keys);
+                obj.Properties.isTable = true;
+                obj.data = data;
                 
             elseif isnumeric(data)
                 % input is a matrix with the keys and levels as table
@@ -108,18 +148,16 @@ classdef DR2
                 assert(all(size(data) == cellfun(@height,keys(1:ndims(data)))))
                 assert(all(cellfun(@height,keys((ndims(data)+1):end))==1))
                 
-                obj.Dimensions = cellfun_(@TableToCategorical, keys);
-                obj.m_data = data;
-                obj.updatedMDarray = true;
+                obj.Properties.Dimensions = cellfun_(@TableToCategorical, keys);
+                obj.Properties.isMDarray = true;
+                obj.data = data;
             else
                 error('wrong type of input')
             end
             
+            obj = obj.assignLevels;
         end
         
-        function dimNames = get_dimNames(obj)
-            dimNames = cellfun_(@varnames, obj.Dimensions);
-        end
     end
     
 end

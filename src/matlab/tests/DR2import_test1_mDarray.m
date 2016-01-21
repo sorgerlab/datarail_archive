@@ -8,7 +8,8 @@ keys = {table(num2cell('A':'J')', num2cell('a':'j')', 'variablenames', {'up' 'lo
      table((0:9)'/10, 'variablenames', {'val'})};
 
 %%
-DR2m = DR2(m, keys)
+DR2m = DR2(m, keys);
+DR2m.comment = 'original data'
 
 %
 sDR2m = DR2m.sub(...
