@@ -11,7 +11,8 @@ classdef DR2
         % the data is stored as a long table or a MD array
         %   currently there is no conversion between formats MH 16/1/20
         
-        Properties = struct('isTable', false, ... % data is in table format
+        Properties = struct(...
+            'isTable', false, ... % data is in table format
             'isMDarray', false, ... % data is in matrix format
             'Dimensions', {{}}, ... % stored as tables of categorical of numeric values
             ... % Dimensions
@@ -49,49 +50,85 @@ classdef DR2
             end
         end
         
-        function obj = sub(obj, varargin)
-            % DR2out = DR2in.sub('varname', 'condition', [ ...
+        function sub_obj = subcond(obj, varargin)
+            % DR2out = DR2in.subcond('varname', 'condition', [ ...
             %           'logical', 'varname', 'condition'])
             %   varargin are pairs of keys and conditions (either as
             %   symbolic functions or strings. multiple pairs should be
             %   separated by logical operator ('or', 'and', 'or not',
             %   'and not', 'xor'). Operators are applied from right to left
             %   e.g.:
-            %   subDR2(DR2in, ...
+            %   > DR2in.subcond( ...
             %       'cellline', @(x) ismember(x, {'BT20','MCF10A'}), ...
             %       'and', 'DrugName', '=''Lapatinib''', ...
             %
             assert(mod(nargin,3)==0)
-            Variables = varargin(1:3:end);
+            DimNames = varargin(1:3:end);
             Conditions = varargin(2:3:end);
             Operators = cellfun_(@lower, [varargin(3:3:end) {'and'}]);
+            obj.checkDimNames(DimNames);
             
-            if obj.Properties.isTable
-                % operate on the table
-                idx = filterOnTable(obj.data, Variables, Conditions, Operators);
-                obj = constructTwoArgument_(obj, obj.data(idx,:), [obj.DimNames{:}]);
-                
-            elseif obj.Properties.isMDarray
-                % operate on the matrix
-                idx = filterOnLevels(obj.Properties.Dimensions, Variables, Conditions, Operators);
-                newMD = obj.data(idx{:});
-                newDimensions = cellfun_(@(x,y) x(y,:), obj.Properties.Dimensions, idx);
-                % push the dimensions with only have one level at the end.
-                % These are removed from the matrix, but kept in the levels
-                obj = constructTwoArgument_(obj, squeeze(newMD), ...
-                    newDimensions([find(cellfun(@height,newDimensions)~=1) ...
-                    find(cellfun(@height,newDimensions)==1)]));
-                
-            end
+            sub_obj = filterDR2(obj, DimNames, Conditions, Operators);
+            
             varstr = cellfun_(@(x) evalc('disp(x)'), varargin);
             varstr = cellfun_(@(x) x(x>32), varstr);
-            
-            operation = strjoin(varstr,' ');
-            obj.comment = [obj.comment sprintf('\nsub: ') operation];
-            obj.Properties.Operations = [obj.Properties.Operations ...
-                sprintf('\nsub: ') operation];
+            sub_obj = sub_obj.addlog(['subcond: ' strjoin(varstr,' ')]);
         end
         
+        
+        function sub_obj = substr(obj, varargin)
+            % DR2out = DR2in.substr('logical string')
+            %   string is a list of conditions applied on the DR2 object
+            %   (refered as 'x') and separated by logical operator ('or',
+            %   'and'). The 'or' can only be used only on keys of the same
+            %   dimension and will be evaluated first. [-- Multiple string
+            %   will be applied indivdually and then merged
+            %       still to implement -- MH 16/1/21]
+            %   Examples:
+            %   > DR2in.subDR2( ...
+            %       'ismember(x.cellline, {''BT20'',''MCF10A''}) & x.Time==24')
+            %   > DR2in.subDR2( ...
+            %       'ismember(x.cellline, {''BT20'',''MCF10A''}) & x.Time==24')
+            %
+            
+            if any(ismember('|~', [varargin{1}{:}]))
+                ME = MException('DR2:notSupported', 'only & operator is supported');
+                throw(ME)
+            end
+                
+            Conditions = regexp([varargin{:}], '&', 'split');Conditions = Conditions{1};
+            
+            % DimNames = cellfun_(@(x) regexp(x, 'x.([_\w]*)', 'tokens'), modules)
+            DimNames = cell(1,length(Conditions));
+            LogicalIdx = cell(1,length(Conditions));
+            dr2_DimNames = get_dimNames(obj);
+            for i=1:length(Conditions)                
+                DimName = dr2_DimNames(~cellfun(@isempty, ...
+                    cellfun_(@(x) strfind(Conditions{i},x), dr2_DimNames)));
+                if isempty(DimName)
+                    ME = MException('DR2:badCondition', ...
+                        'unknown dimension for condition: %s', Conditions{i});
+                    throw(ME)
+                elseif length(DimName)>1 || length(strfind(Conditions{i}, DimName{1}))~=1
+                    ME = MException('DR2:badCondition', ...
+                        'ambiguous condition: %s', Conditions{i});
+                    throw(ME)
+                end
+                DimNames(i) = DimName;
+                try
+                    LogicalIdx{i} = eval(regexprep(Conditions{i}, DimName{1}, ...
+                        ['obj.get_dimLevels(''' DimName{1} ''')']));
+                catch                    
+                    ME = MException('DR2:badCondition', ...
+                        'error for condition: %s', Conditions{i});
+                    throw(ME)
+                end
+            end            
+            Operators = repmat({'and'}, 1, length(DimNames));            
+            
+            sub_obj = filterDR2(obj, DimNames, LogicalIdx, Operators);            
+            sub_obj = sub_obj.addlog(['substr: ' strjoin(varargin{:}, ' & ')]);
+        end
         
         %         function obj = createMDarrayFromTable(obj)
         %
@@ -100,6 +137,8 @@ classdef DR2
         %
         %         end
         
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %%% functions meant to be private on the long term
         
         function [dimNames, dimLevels] = get_dimNames(obj)
             dims = cellfun_(@varnames, obj.Properties.Dimensions);
@@ -111,26 +150,16 @@ classdef DR2
                 for j=1:length(dims{i})
                     dimLevels{j + sum(cellfun(@length, dims(1:(i-1))))} = ...
                         obj.Properties.Dimensions{i}.(j);
-                end
-                
+                end                
             end
         end
         
-        function obj = assignLevels(obj)
-            [dimNames, dimLevels] = get_dimNames(obj);
-            
-            obj.lvls = struct();
-            
-            % add the dimensions as new fields
-            for i=1:length(dimNames)
-                obj.lvls.(dimNames{i}) = dimLevels{i};
-            end
-            
+        function [dimLevels, dimIdx] = get_dimLevels(obj, DimName)
+            dims = cellfun_(@varnames, obj.Properties.Dimensions);
+            dimIdx = find(cellfun(@(x) ismember(DimName, x), dims));
+            dimLevels = obj.lvls.(DimName);
         end
         
-    end
-    
-    methods(Access = private)
         
         function obj = constructTwoArgument_(obj, data, keys)
             
@@ -148,6 +177,11 @@ classdef DR2
                 assert(all(size(data) == cellfun(@height,keys(1:ndims(data)))))
                 assert(all(cellfun(@height,keys((ndims(data)+1):end))==1))
                 
+                % push the dimensions with only have one level at the end.
+                % These are removed from the matrix, but kept in the levels
+                data = squeeze(data);
+                keys = keys([find(cellfun(@height,keys)~=1) find(cellfun(@height,keys)==1)]);
+                
                 obj.Properties.Dimensions = cellfun_(@TableToCategorical, keys);
                 obj.Properties.isMDarray = true;
                 obj.data = data;
@@ -157,7 +191,46 @@ classdef DR2
             
             obj = obj.assignLevels;
         end
+    end
+    
+    methods(Access = private)
         
+        
+        function obj = assignLevels(obj)
+            [dimNames, dimLevels] = get_dimNames(obj);            
+            obj.lvls = struct();
+            
+            % add the dimensions as new fields
+            for i=1:length(dimNames)
+                obj.lvls.(dimNames{i}) = dimLevels{i};
+            end
+            
+        end
+        
+        function obj = addlog(obj, str)
+            if isempty(obj.comment)
+                obj.comment = [obj.comment sprintf(' ') str];
+            else
+                obj.comment = [obj.comment sprintf('\n ') str];
+            end
+            if isempty(obj.Properties.Operations)
+                obj.Properties.Operations = [obj.Properties.Operations ...
+                    sprintf(' ') str];
+            else
+                obj.Properties.Operations = [obj.Properties.Operations ...
+                    sprintf('\n ') str];
+            end
+        end
+        
+        
+        function checkDimNames(obj, DimNames)
+            idx = ismember(DimNames, get_dimNames(obj));
+            if any(~idx)
+                ME = MException('DR2:noSuchDimension', '%s is/are not dimension', ...
+                    strjoin( strcat('''', DimNames(~idx), ''''), ', '));
+                throw(ME)
+            end
+        end
     end
     
 end
