@@ -1,11 +1,11 @@
-header1	header 2	header2[qualificatif]	header 2[qual2]=unit	header#3
-true	A	a	0.14286	test1
-true	B	b	0.28571	test2
-true	C	c	0.42857	test1
-true	D	d	0.57143	test2
-true	E	b	0.71429	test1
-false	F	c	0.85714	test2
-false	G	d	1	test1
-false	H	b	1.1429	test2
-false	I	c	1.2857	test1
-false	J	d	1.4286	test2
+header1	header 2	header2[qualificatif]	header 2[qual2]=unit	value
+true	A	a	test1	0.14286
+true	B	b	test2	0.28571
+true	C	c	test1	0.42857
+true	D	d	test2	0.57143
+true	E	b	test1	0.71429
+false	F	c	test2	0.85714
+false	G	d	test1	1
+false	H	b	test2	1.1429
+false	I	c	test1	1.2857
+false	J	d	test2	1.4286

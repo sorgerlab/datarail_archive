@@ -38,13 +38,16 @@ classdef DR2
     
     methods
         function obj = DR2(data, keys, varargin)
-            % obj = DR2(data, keys, varargin)
+            % obj = DR2(data, keys, comment, varargin)
             %   constructor
             switch nargin
                 case 0
                     return
                 case 2
                     obj = constructTwoArgument_(obj, data, keys);
+                case 3
+                    obj = constructTwoArgument_(obj, data, keys);
+                    obj.comment = varargin{1};
                 otherwise
                     error('Expecting two arguments: (table or data), keys')
             end
@@ -140,10 +143,13 @@ classdef DR2
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %%% functions meant to be private on the long term
         
-        function [dimNames, dimLevels] = get_dimNames(obj)
+        function [dimNames, dimLevels, dimIdx] = get_dimNames(obj)
             dims = cellfun_(@varnames, obj.Properties.Dimensions);
             dimNames = cell(length(dims),1);
             dimLevels = dimNames;
+            dimIdx = cellfun_(@(x,y) y*ones(1,width(x)), obj.Properties.Dimensions, ...
+                num2cell(1:length(obj.Properties.Dimensions)));
+            dimIdx = [dimIdx{:}];
             for i=1:length(dims)
                 dimNames((1:length(dims{i})) + sum(cellfun(@length, dims(1:(i-1))))) = ...
                     dims{i};
@@ -207,11 +213,17 @@ classdef DR2
             
         end
         
+        
+        function dr2_out = copylog(obj, dr2_out)
+            dr2_out.comment = obj.comment;
+            dr2_out.Properties.Operations = obj.Properties.Operations;
+        end
+        
         function obj = addlog(obj, str)
             if isempty(obj.comment)
-                obj.comment = [obj.comment sprintf(' ') str];
+                obj.comment = [obj.comment sprintf(' -') str];
             else
-                obj.comment = [obj.comment sprintf('\n ') str];
+                obj.comment = [obj.comment sprintf('\n -') str];
             end
             if isempty(obj.Properties.Operations)
                 obj.Properties.Operations = [obj.Properties.Operations ...

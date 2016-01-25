@@ -34,7 +34,7 @@ if strcmp(S(1).type,'.')
     
 elseif strcmp(S(1).type,'()')
     if length(S)==1 && iscellstr(S(1).subs)
-        varargout = dr2.substr(S(1).subs);
+        [varargout{:}] = dr2.substr(S(1).subs);
     else
         disp('not implemented in subsref')
         {S.type}

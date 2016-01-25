@@ -11,7 +11,7 @@ if obj.Properties.isMDarray
 end
 
 fprintf('\tDimensions:')
-for i=1:length(obj.Properties.Dimensions)    
+for i=1:length(obj.Properties.Dimensions)
     fprintf('\n\t %2i: (%s), %i level%s', i, strjoin(varnames(obj.Properties.Dimensions{i}), ', '), ...
         height(obj.Properties.Dimensions{i}), 's'*(height(obj.Properties.Dimensions{i})>1));
 end
