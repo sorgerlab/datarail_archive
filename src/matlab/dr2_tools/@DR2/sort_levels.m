@@ -25,7 +25,7 @@ Dim_order{dimIdx} = order;
 perm_data = obj.data(Dim_order{:});
 
 dr2_out = DR2(perm_data, keys);
-dr2_out = obj.copylog(dr2_out);
+dr2_out = dr2_out.copylog(obj);
 
 if ischar(dim)
     dr2_out = dr2_out.addlog(['sort_levels (' dim ', ' mode ')']);

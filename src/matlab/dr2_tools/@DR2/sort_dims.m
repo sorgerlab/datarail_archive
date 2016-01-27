@@ -29,5 +29,5 @@ end
 perm_data = permute(obj.data, dim_order);
 
 dr2_out = DR2(perm_data, keys);
-dr2_out = obj.copylog(dr2_out);
+dr2_out = dr2_out.copylog(obj);
 dr2_out = dr2_out.addlog(['sort_dims (' num2str(sort_keys) ')']);

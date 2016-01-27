@@ -214,9 +214,9 @@ classdef DR2
         end
         
         
-        function dr2_out = copylog(obj, dr2_out)
-            dr2_out.comment = obj.comment;
-            dr2_out.Properties.Operations = obj.Properties.Operations;
+        function obj = copylog(obj, dr2_in)
+            obj.comment = dr2_in.comment;
+            obj.Properties.Operations = dr2_in.Properties.Operations;
         end
         
         function obj = addlog(obj, str)
