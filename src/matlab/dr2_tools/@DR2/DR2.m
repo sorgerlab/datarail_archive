@@ -37,6 +37,11 @@ classdef DR2
     
     
     methods
+         function out = end(obj,k,n)
+             e = str2func('end');
+             out = e(obj.data,k,n);
+         end
+         
         function obj = DR2(data, keys, varargin)
             % obj = DR2(data, keys, comment, varargin)
             %   constructor
@@ -71,7 +76,7 @@ classdef DR2
             Operators = cellfun_(@lower, [varargin(3:3:end) {'and'}]);
             obj.checkDimNames(DimNames);
             
-            sub_obj = filterDR2(obj, DimNames, Conditions, Operators);
+            sub_obj = obj.filterDR2(DimNames, Conditions, Operators);
             
             varstr = cellfun_(@(x) evalc('disp(x)'), varargin);
             varstr = cellfun_(@(x) x(x>32), varstr);
@@ -129,7 +134,7 @@ classdef DR2
             end            
             Operators = repmat({'and'}, 1, length(DimNames));            
             
-            sub_obj = filterDR2(obj, DimNames, LogicalIdx, Operators);            
+            sub_obj = obj.filterDR2(DimNames, LogicalIdx, Operators);            
             sub_obj = sub_obj.addlog(['substr: ' strjoin(varargin{:}, ' & ')]);
         end
         

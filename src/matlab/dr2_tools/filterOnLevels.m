@@ -7,7 +7,7 @@ idx = cellfun_(@(x) true(height(x),1), dr2.Properties.Dimensions);
 
 for i=length(DimNames):-1:1
     % find the right dimension
-    [dimVals, dimIdx] = dr2.(DimNames{i});
+    [dimVals, dimIdx] = dr2.get_dimLevels(DimNames{i});
     assert(length(dimIdx)==1) %%%% needs better error reporting MH 15/12/17
     
     % evaluate the conditions

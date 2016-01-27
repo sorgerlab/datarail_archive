@@ -35,10 +35,17 @@ if strcmp(S(1).type,'.')
 elseif strcmp(S(1).type,'()')
     if length(S)==1 && iscellstr(S(1).subs)
         [varargout{:}] = dr2.substr(S(1).subs);
+    elseif length(S)==1 && iscell(S(1).subs) && ...
+            all(cellfun(@(x) isnumeric(x) || islogical(x) || (ischar(x) && strcmp(x,':')), S(1).subs))
+        colon_idx = find(cellfun(@(x) ischar(x) && strcmp(x,':'), S(1).subs));
+        S(1).subs(colon_idx) = cellfun_(@(x) 1:height(x), dr2.Properties.Dimensions(colon_idx));
+        [varargout{:}] = dr2.filterDR2matrix(S(1).subs);
     else
-        disp('not implemented in subsref')
+        disp('() case not implemented in subsref')
+        S
         {S.type}
         S.subs{:}
+        
     end
     
 else
