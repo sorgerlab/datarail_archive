@@ -6,7 +6,6 @@ function setup(testcase)
     tbl = table({}, {}, {}, {}, 'VariableNames', {'a' 'b' 'c' 'd'});
 
     testcase.TestData.table = tbl;
-    testcase.TestData.dataset = table2dataset(tbl);
 end
 
 function test_00(testcase)
@@ -35,30 +34,4 @@ function test_03(testcase)
                 'DR20:badsubscript');
 end
 
-% ----------------------------------------------------------------------
 
-function test_10(testcase)
-    dst = testcase.TestData.dataset;
-    actual = dropcols(dst, {'b' 'd'});
-    expected = dst(:, {'a' 'c'});
-    verifyEqual(testcase, actual, expected);
-end
-
-function test_11(testcase)
-    dst = testcase.TestData.dataset;
-    actual = dropcols(dst, [2 4]);
-    expected = dst(:, {'a' 'c'});
-    verifyEqual(testcase, actual, expected);
-end
-
-function test_12(testcase)
-    dst = testcase.TestData.dataset;
-    verifyError(testcase, @() dropcols(dst, {'b' 'z'}), ...
-                'DR20:UnrecognizedTableVariable');
-end
-
-function test_13(testcase)
-    dst = testcase.TestData.dataset;
-    verifyError(testcase, @() dropcols(dst, [2 26]), ...
-                'DR20:badsubscript');
-end

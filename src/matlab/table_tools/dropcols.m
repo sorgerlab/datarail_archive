@@ -1,10 +1,10 @@
 function tbl = dropcols(tbl, dropset)
 %DROPCOLS Remove some columns.
-%   B = DROPCOLS(A, COLSTODROP) produces a new table (or dataset) B
+%   B = DROPCOLS(A, COLSTODROP) produces a new table B
 %   with the same columns as those in A (in the same order), except
 %   for those that are listed in COLSTODROP.
 %
-%   The class (table or dataset) of the first argument determines
+%   The class (table) of the first argument determines
 %   the class of the result.
 %
 %   The second argument may be a vector of integers, representing
