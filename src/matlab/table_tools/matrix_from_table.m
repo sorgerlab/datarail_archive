@@ -21,15 +21,13 @@ function [matrix, labels] = matrix_from_table(tbl, rowvar, colvar, valvar, varar
         agg = varargin{1};
     end
 
-    warning('off','stats:dataset:genvalidnames:ModifiedVarnames')
     warning('off', 'MATLAB:codetools:ModifiedVarnames');
 
     t = unstack(tbl(:, {rowvar, valvar, colvar}), ...
                 valvar, colvar, 'AggregationFunction', agg);
 
     warning('on', 'MATLAB:codetools:ModifiedVarnames');
-    warning('on','stats:dataset:genvalidnames:ModifiedVarnames')
-
+    
     rowlabels = t(:, rowvar);
     t.(rowvar) = [];
     if nargout > 1

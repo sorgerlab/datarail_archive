@@ -1,6 +1,6 @@
 function varargout = varnames(tbl, varargin)
 %VARNAMES Get (or set) column names.
-%   The function's first argument may be either a table or a dataset.
+%   The function's first argument is a table.
 %
 %   B = varnames(A)
 %
@@ -8,11 +8,6 @@ function varargout = varnames(tbl, varargin)
 %
 %   B = varnames.Properties.VariableNames
 %
-%   ...if A is a table, and for
-%
-%   B = varnames.Properties.VarNames
-%
-%   ...if A is a dataset.
 %
 %   With a second argument, which should be a cell array of strings
 %   specifying new column names, the function returns a copy of the

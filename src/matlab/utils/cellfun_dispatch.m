@@ -3,8 +3,8 @@ function output = cellfun_dispatch(fct, varargin)
 assert(isa(fct, 'function_handle'))
 
 for i=1:length(varargin)
-    if isa(varargin{i},'dataset')
-        varargin{i} = dataset2cell(varargin{i});
+    if istable(varargin{i})
+        varargin{i} = table2cell(varargin{i});
     end
 end
 

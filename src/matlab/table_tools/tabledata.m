@@ -1,5 +1,5 @@
 function d = tabledata(t)
-%TABLEDATA Return contents of table (or dataset) as a cell array of columns.
+%TABLEDATA Return contents of table as a cell array of columns.
 %   B = TABLEDATA(A) is shorthand for
 %
 %   B = arrayfun(@(i) A.(i), 1:width(A), 'UniformOutput', false);
