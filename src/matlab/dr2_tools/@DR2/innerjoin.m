@@ -25,8 +25,8 @@ if length(SelectedDim)~=1 || ~all(ismember(lkeys, dimNames))
 end
 
 % perform the join (outer-left)
-[t_out, idx, Ridx] = innerjoin(obj.Properties.Dimensions{SelectedDim}, t_in, ...
-     varargin{:}); 
+[t_out, idx, Ridx] = innerjoin(obj.Properties.Dimensions{SelectedDim}, ...
+    table2categorical(t_in), varargin{:}); 
 
 
 % reassign the levels (need reordering to match original version)

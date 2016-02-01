@@ -183,10 +183,21 @@ classdef DR2
                 
             elseif isnumeric(data)
                 % input is a matrix with the keys and levels as table
-                assert(all(cellfun(@istable,keys)))
+                if ~all(cellfun(@istable,keys))
+                    ME = MException('DR2:contructorkeys','keys must be a cell of tables');
+                    throw(ME)
+                end
                 % accept some extra dimensions only if they have one level
-                assert(all(size(data) == cellfun(@height,keys(1:ndims(data)))))
-                assert(all(cellfun(@height,keys((ndims(data)+1):end))==1))
+                if ~all(size(data) == cellfun(@height,keys(1:ndims(data))))
+                    ME = MException('DR2:contructorkeys',...
+                        'keys must have as many tables as number of dimensions of data');
+                    throw(ME)
+                end
+                if ~all(cellfun(@height,keys((ndims(data)+1):end))==1)
+                    ME = MException('DR2:contructorkeys',...
+                        'extra tables (more than data dimensions) must have height=1');
+                    throw(ME)
+                end
                 
                 % push the dimensions with only have one level at the end.
                 % These are removed from the matrix, but kept in the levels
