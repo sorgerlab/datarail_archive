@@ -37,4 +37,6 @@ if b, flag=flag+1e2; end
 if all(dr2_1.data(:)==dr2_2.data(:))
     b = true & b;
     flag = flag+1e3;
+else
+    b = false;
 end
